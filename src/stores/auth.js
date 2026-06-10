@@ -14,7 +14,8 @@ export const useAuthStore = defineStore('auth', () => {
    * Getters
    */
   const isLoggedIn = computed(() => !!token.value)
-  const isManager = computed(() => user.value?.role === 'manager')
+  const isManager = computed(() => user.value?.role === 'branch_manager')
+  const isTrackAdmin = computed(() => user.value?.role === 'track_admin')
   const isInstructor = computed(() => user.value?.role === 'instructor')
   const isStudent = computed(() => user.value?.role === 'student')
 

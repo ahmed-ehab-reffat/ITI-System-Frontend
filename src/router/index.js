@@ -8,7 +8,8 @@ import { useAuthStore } from '@/stores/auth'
  */
 function getDashboardRoute(role) {
   const dashboards = {
-    manager: 'manager-dashboard',
+    branch_manager: 'manager-dashboard',
+    track_admin: 'manager-dashboard', // Assuming track_admin uses the same for now or fallback
     instructor: 'instructor-dashboard',
     student: 'student-dashboard',
   }
@@ -27,7 +28,7 @@ const routes = [
     path: '/manager/dashboard',
     name: 'manager-dashboard',
     component: () => import('@/views/manager/ManagerDashboard.vue'),
-    meta: { requiresAuth: true, role: 'manager' },
+    meta: { requiresAuth: true, role: 'branch_manager' },
   },
   {
     path: '/instructor/dashboard',
@@ -58,22 +59,33 @@ router.beforeEach((to) => {
   const isAuthenticated = authStore.isLoggedIn
   const userRole = authStore.user?.role
 
-  // 1. Route requires auth but user is not logged in → redirect to login
+  // 1. Unauthenticated: Redirect to login if path requires auth
   if (to.meta.requiresAuth && !isAuthenticated) {
     return { name: 'login' }
   }
 
-  // 2. Logged-in user tries to visit a guest-only route (e.g. /login) → redirect to their dashboard
-  if (to.meta.guest && isAuthenticated) {
-    return { name: getDashboardRoute(userRole) }
+  // 2. Authenticated: Handle guest-only routes and role mismatches
+  if (isAuthenticated) {
+    const dashboard = getDashboardRoute(userRole)
+
+    // A. If accessing a guest route (like /login), redirect to dashboard
+    if (to.meta.guest) {
+      if (to.name !== dashboard) {
+        return { name: dashboard }
+      }
+    }
+
+    // B. If accessing a route with a specific role requirement that doesn't match
+    if (to.meta.requiresAuth && to.meta.role && to.meta.role !== userRole) {
+      // CRITICAL: Only redirect if we aren't already at the target dashboard
+      // This prevents infinite loops when multiple roles (e.g., track_admin) map to same dashboard
+      if (to.name !== dashboard) {
+        return { name: dashboard }
+      }
+    }
   }
 
-  // 3. Logged-in user accesses a route whose role doesn't match → redirect to correct dashboard
-  if (to.meta.requiresAuth && to.meta.role && to.meta.role !== userRole) {
-    return { name: getDashboardRoute(userRole) }
-  }
-
-  // 4. All checks passed — allow navigation
+  // 3. Allow navigation
 })
 
 export default router
