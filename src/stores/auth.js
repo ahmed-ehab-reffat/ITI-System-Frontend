@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
    * @returns {Promise<object>} The authenticated user object.
    */
   async function login(credentials) {
-    const response = await api.post('/login', credentials)
+    const response = await api.post('/auth/login', credentials)
 
     const { token: newToken, user: newUser } = response.data
 
