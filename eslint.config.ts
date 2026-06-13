@@ -32,6 +32,7 @@ export default defineConfigWithVueTs(
   {
     rules: {
       'vue/block-lang': 'off',
+      'vue/multi-word-component-names': 'off',
     }
   }
 )

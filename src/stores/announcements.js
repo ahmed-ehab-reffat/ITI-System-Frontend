@@ -6,48 +6,63 @@ export const useAnnouncementsStore = defineStore('announcements', () => {
   const announcements = ref([])
   const loading = ref(false)
 
+  /**
+   * GET /cohorts/{cohortId}/announcements
+   */
   async function fetchForCohort(cohortId) {
     loading.value = true
     try {
       const { data } = await api.get(`/cohorts/${cohortId}/announcements`)
-      announcements.value = data.data
-      return data.data
+      // Handle both wrapped { data: [...] } and plain [...] responses
+      announcements.value = data.data ?? data
     } finally {
       loading.value = false
     }
   }
 
+  /**
+   * POST /cohorts/{cohortId}/announcements
+   */
   async function create(cohortId, payload) {
     loading.value = true
     try {
       const { data } = await api.post(`/cohorts/${cohortId}/announcements`, payload)
-      announcements.value.unshift(data)
-      return data
+      const newAnnouncement = data.data ?? data
+      announcements.value.unshift(newAnnouncement)
+      return newAnnouncement
     } finally {
       loading.value = false
     }
   }
 
-  async function update(cohortId, announcementId, payload) {
+  /**
+   * PUT /announcements/{id}
+   * Note: shallow resource — cohortId is NOT needed for update.
+   */
+  async function update(announcementId, payload) {
     loading.value = true
     try {
-      const { data } = await api.put(`/cohorts/${cohortId}/announcements/${announcementId}`, payload)
+      const { data } = await api.put(`/announcements/${announcementId}`, payload)
+      const updatedAnnouncement = data.data ?? data
       const index = announcements.value.findIndex(a => a.id === announcementId)
       if (index !== -1) {
-        announcements.value[index] = data
+        announcements.value[index] = updatedAnnouncement
       }
-      return data
+      return updatedAnnouncement
     } finally {
       loading.value = false
     }
   }
 
-  async function destroy(cohortId, announcementId) {
+  /**
+   * DELETE /announcements/{id}
+   * Note: shallow resource — cohortId is NOT needed for destroy.
+   */
+  async function destroy(announcementId) {
     loading.value = true
     try {
-      const { data } = await api.delete(`/cohorts/${cohortId}/announcements/${announcementId}`)
+      await api.delete(`/announcements/${announcementId}`)
       announcements.value = announcements.value.filter(a => a.id !== announcementId)
-      return data
     } finally {
       loading.value = false
     }
@@ -59,6 +74,6 @@ export const useAnnouncementsStore = defineStore('announcements', () => {
     fetchForCohort,
     create,
     update,
-    destroy
+    destroy,
   }
 })

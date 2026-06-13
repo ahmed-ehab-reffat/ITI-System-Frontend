@@ -12,7 +12,8 @@ const props = defineProps({
 
 const emit = defineEmits(['select'])
 
-const { loading, error, data: sessions, execute } = useApi()
+const { loading, error, execute } = useApi()
+const sessionList = ref([])
 const selectedId = ref('')
 
 const isToday = (dateString) => {
@@ -27,15 +28,15 @@ onMounted(async () => {
   if (!props.engagementId) return
   
   const res = await execute(() => api.get(`/engagements/${props.engagementId}/sessions`))
-  
-  if (res && res.data && res.data.length > 0) {
+
+  // Laravel ResourceCollection wraps the array in { data: [...] }
+  const list = Array.isArray(res) ? res : (res?.data ?? [])
+  sessionList.value = list
+
+  if (list.length > 0) {
     // Try to find today's session
-    const todaySession = res.data.find(s => isToday(s.session_date))
-    if (todaySession) {
-      selectedId.value = todaySession.id
-    } else {
-      selectedId.value = res.data[0].id
-    }
+    const todaySession = list.find(s => isToday(s.session_date))
+    selectedId.value = todaySession ? todaySession.id : list[0].id
     emit('select', selectedId.value)
   }
 })
@@ -47,11 +48,14 @@ function handleChange() {
 }
 
 function formatDate(dateStr) {
+  if (!dateStr) return 'No date'
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric'
-  }).format(new Date(dateStr))
+  }).format(date)
 }
 </script>
 
@@ -67,7 +71,7 @@ function formatDate(dateStr) {
       {{ error }}
     </div>
     
-    <div v-else-if="!sessions || sessions.length === 0" class="text-on-surface-variant text-sm py-2">
+    <div v-else-if="!sessionList || sessionList.length === 0" class="text-on-surface-variant text-sm py-2">
       No sessions available for this engagement.
     </div>
     
@@ -77,7 +81,7 @@ function formatDate(dateStr) {
       @change="handleChange"
       class="w-full md:w-96 px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-input focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
     >
-      <option v-for="session in sessions" :key="session.id" :value="session.id" :class="{'font-bold': isToday(session.session_date)}">
+      <option v-for="session in sessionList" :key="session.id" :value="session.id" :class="{'font-bold': isToday(session.session_date)}">
         {{ formatDate(session.session_date) }} 
         <span v-if="isToday(session.session_date)"> (Today)</span>
       </option>

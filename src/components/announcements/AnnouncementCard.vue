@@ -35,6 +35,13 @@ const formattedDate = computed(() => {
 const authorInitials = computed(() => {
   return props.announcement.author_name?.charAt(0).toUpperCase() || 'U'
 })
+
+const authorRole = computed(() => {
+  const role = props.announcement.author_role
+  if (!role) return ''
+  // Format role string (e.g. "track_admin" -> "Track Admin")
+  return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+})
 </script>
 
 <template>
@@ -45,7 +52,10 @@ const authorInitials = computed(() => {
           {{ authorInitials }}
         </div>
         <div>
-          <div class="font-medium text-sm text-black">{{ announcement.author_name }}</div>
+          <div class="font-medium text-sm text-black flex items-center gap-2">
+            {{ announcement.author_name }}
+            <span v-if="authorRole" class="text-[10px] uppercase tracking-wider bg-surface-container-low text-on-surface-variant px-1.5 py-0.5 rounded font-semibold">{{ authorRole }}</span>
+          </div>
           <div class="text-xs text-secondary">{{ formattedDate }}</div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import TrackStatCard from '@/components/manager/TrackStatCard.vue'
 import AtRiskList from '@/components/manager/AtRiskList.vue'
 import GraderConsistencyTable from '@/components/manager/GraderConsistencyTable.vue'
+import AppIcon from '@/components/shared/AppIcon.vue'
 import { useApi } from '@/composables/useApi'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -19,7 +20,9 @@ const cohortId = ref(null) // Hardcoded to first cohort if available for demo
 const { loading: cohortLoading, data: cohortData, execute: executeCohort } = useApi()
 
 onMounted(async () => {
-  await executeBranch(() => api.get('/analytics/branch'))
+  if (authStore.isManager) {
+    await executeBranch(() => api.get('/analytics/branch'))
+  }
   await executeAtRisk(() => api.get('/analytics/at-risk'))
 
   if (authStore.isTrackAdmin) {
@@ -83,9 +86,37 @@ onMounted(async () => {
         </div>
         <GraderConsistencyTable 
           v-else 
-          :consistencies="cohortData?.grader_consistencies || []" 
+          :consistencies="cohortData?.grader_consistency || []" 
           :loading="cohortLoading" 
         />
+
+        <!-- Early Warning Section -->
+        <template v-if="cohortId && cohortData?.early_warning?.length > 0">
+          <h2 class="font-headline-sm text-headline-sm mt-8 mb-4 flex items-center gap-2">
+            <AppIcon name="trending_down" class="text-[#e65100]" />
+            Early Warning
+          </h2>
+          <div class="bg-[#fff3e0] border border-[#e65100]/30 rounded-xl overflow-hidden">
+            <table class="w-full text-sm">
+              <thead class="bg-[#ffe0b2] text-xs">
+                <tr>
+                  <th class="text-left p-3 font-medium text-[#5d3f1e]">Student</th>
+                  <th class="text-left p-3 font-medium text-[#5d3f1e]">Email</th>
+                  <th class="text-center p-3 font-medium text-[#5d3f1e]">Recent Absences</th>
+                  <th class="text-center p-3 font-medium text-[#5d3f1e]">Ledger</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#e65100]/20">
+                <tr v-for="student in cohortData.early_warning" :key="student.student_id" class="hover:bg-[#ffcc80]/20">
+                  <td class="p-3 text-[#3e2723] font-medium">{{ student.name }}</td>
+                  <td class="p-3 text-[#5d4037]">{{ student.email }}</td>
+                  <td class="p-3 text-center font-bold text-[#e65100]">{{ student.recent_absences }} / 3</td>
+                  <td class="p-3 text-center font-medium" :class="student.ledger_balance < 150 ? 'text-error' : 'text-on-surface'">{{ student.ledger_balance }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
       </div>
     </div>
   </MainLayout>
