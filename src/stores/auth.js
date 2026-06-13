@@ -63,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Getters
     isLoggedIn,
     isManager,
+    isTrackAdmin,
     isInstructor,
     isStudent,
 
