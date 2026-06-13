@@ -15,14 +15,17 @@ const navigation = computed(() => {
   
   const links = []
   
-  if (role === 'branch_manager' || role === 'track_admin') {
+  if (role === 'branch_manager') {
     links.push({ name: 'Dashboard', path: '/manager/dashboard', icon: 'dashboard' })
-    links.push({ name: 'Cohorts', path: '#', icon: 'group' }) // Placeholder
     links.push({ name: 'Announcements', path: '/announcements', icon: 'campaign' })
+    links.push({ name: 'Billing', path: '/manager/billing', icon: 'payments' })
   }
   
-  if (role === 'branch_manager') {
-    links.push({ name: 'Billing', path: '/manager/billing', icon: 'payments' })
+  if (role === 'track_admin') {
+    links.push({ name: 'Dashboard', path: '/admin', icon: 'dashboard' })
+    links.push({ name: 'Setup', path: '/admin/setup', icon: 'settings' })
+    links.push({ name: 'Students', path: '/admin/students', icon: 'group' })
+    links.push({ name: 'Announcements', path: '/admin/announcements', icon: 'campaign' })
   }
   
   if (role === 'instructor') {

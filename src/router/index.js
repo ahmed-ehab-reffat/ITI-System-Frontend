@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 function getDashboardRoute(role) {
   const dashboards = {
     branch_manager: 'manager-dashboard',
-    track_admin: 'manager-dashboard',
+    track_admin: 'admin-dashboard',
     instructor: 'instructor-dashboard',
     student: 'student-dashboard',
   }
@@ -29,6 +29,30 @@ const routes = [
     name: 'manager-dashboard',
     component: () => import('@/views/manager/ManagerDashboard.vue'),
     meta: { requiresAuth: true, role: 'branch_manager' },
+  },
+  {
+    path: '/admin',
+    name: 'admin-dashboard',
+    component: () => import('@/views/track-admin/DashboardView.vue'),
+    meta: { requiresAuth: true, role: 'track_admin' },
+  },
+  {
+    path: '/admin/setup',
+    name: 'admin-setup',
+    component: () => import('@/views/track-admin/CohortSetupView.vue'),
+    meta: { requiresAuth: true, role: 'track_admin' },
+  },
+  {
+    path: '/admin/students',
+    name: 'admin-students',
+    component: () => import('@/views/track-admin/StudentsView.vue'),
+    meta: { requiresAuth: true, role: 'track_admin' },
+  },
+  {
+    path: '/admin/announcements',
+    name: 'admin-announcements',
+    component: () => import('@/views/track-admin/AnnouncementsView.vue'),
+    meta: { requiresAuth: true, role: 'track_admin' },
   },
   {
     path: '/instructor/dashboard',
