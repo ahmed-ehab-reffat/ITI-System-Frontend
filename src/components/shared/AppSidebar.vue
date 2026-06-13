@@ -9,53 +9,49 @@ const router = useRouter()
 const route = useRoute()
 
 const navLinks = computed(() => {
-  const links = []
+  const role = auth.user?.role
 
-  if (auth.isManager) {
-    links.push(
-      { name: 'Dashboard', icon: 'dashboard', to: '/manager/dashboard' },
-      { name: 'Users', icon: 'group', to: '/manager/users' },
-      { name: 'Cohorts', icon: 'school', to: '/manager/cohorts' },
-      { name: 'Tracks', icon: 'category', to: '/manager/tracks' },
-      { name: 'Billing', icon: 'payments', to: '/manager/billing' }
-    )
+  if (role === 'branch_manager') {
+    return [
+      { name: 'Dashboard',      icon: 'dashboard', to: '/manager/dashboard' },
+      { name: 'Users',          icon: 'group',     to: '/manager/users' },
+      { name: 'Cohorts',        icon: 'school',    to: '/manager/cohorts' },
+      { name: 'Tracks',         icon: 'category',  to: '/manager/tracks' },
+      { name: 'Announcements',  icon: 'campaign',  to: '/announcements' },
+      { name: 'Billing',        icon: 'payments',  to: '/manager/billing' },
+    ]
   }
 
-  if (auth.isTrackAdmin) {
-    links.push(
-      { name: 'Dashboard', icon: 'dashboard', to: '/admin' },
-      { name: 'Setup', icon: 'settings', to: '/admin/setup' },
-      { name: 'Students', icon: 'group', to: '/admin/students' },
-      { name: 'Attendance', icon: 'event_available', to: '/admin/attendance' },
-      { name: 'Excuses', icon: 'description', to: '/admin/excuses' },
-      { name: 'Grades', icon: 'grade', to: '/admin/grades' }
-    )
+  if (role === 'track_admin') {
+    return [
+      { name: 'Dashboard',     icon: 'dashboard',       to: '/admin' },
+      { name: 'Setup',         icon: 'settings',        to: '/admin/setup' },
+      { name: 'Students',      icon: 'group',           to: '/admin/students' },
+      { name: 'Grades',        icon: 'grade',           to: '/admin/grades' },
+      { name: 'Announcements', icon: 'campaign',        to: '/admin/announcements' },
+    ]
   }
 
-  if (auth.isInstructor) {
-    links.push(
-      { name: 'Dashboard', icon: 'dashboard', to: '/instructor/dashboard' },
-      { name: 'Attendance', icon: 'event_available', to: '/instructor/attendance' },
-      { name: 'Grades', icon: 'grade', to: '/instructor/grades' }
-    )
+  if (role === 'instructor') {
+    return [
+      { name: 'Dashboard',     icon: 'dashboard',   to: '/instructor/dashboard' },
+      { name: 'Attendance',    icon: 'fact_check',  to: '/instructor/qr/select' },
+      { name: 'Grades',        icon: 'grade',       to: '/instructor/grades' },
+      { name: 'Announcements', icon: 'campaign',    to: '/announcements' },
+    ]
   }
 
-  if (auth.isStudent) {
-    links.push(
-      { name: 'Dashboard', icon: 'dashboard', to: '/student/dashboard' },
-      { name: 'Attendance', icon: 'event_available', to: '/student/attendance' },
-      { name: 'Submissions', icon: 'upload_file', to: '/student/submissions' },
-      { name: 'Grades', icon: 'grade', to: '/student/grades' },
-      { name: 'Excuses', icon: 'description', to: '/student/excuses' }
-    )
+  if (role === 'student') {
+    return [
+      { name: 'Dashboard',     icon: 'dashboard',        to: '/student/dashboard' },
+      { name: 'Grades',        icon: 'grade',            to: '/student/grades' },
+      { name: 'Submissions',   icon: 'upload_file',      to: '/student/submissions' },
+      { name: 'Check In',      icon: 'qr_code_scanner',  to: '/student/checkin' },
+      { name: 'Announcements', icon: 'campaign',         to: '/announcements' },
+    ]
   }
 
-  // Everyone gets announcements (unless it's already in the list for specific roles)
-  if (!links.some(l => l.name === 'Announcements')) {
-    links.push({ name: 'Announcements', icon: 'campaign', to: '/announcements' })
-  }
-
-  return links
+  return []
 })
 
 function handleLogout() {
@@ -63,45 +59,52 @@ function handleLogout() {
   router.push('/login')
 }
 
-const isActive = (path) => route.path === path
+const isActive = (path) => route.path === path || (route.path.startsWith(path) && path !== '/announcements')
 </script>
 
 <template>
-  <aside class="flex h-screen w-64 flex-col border-r border-neutral-200 bg-white">
-    <div class="flex h-16 items-center border-b border-neutral-200 px-6">
-      <span class="text-xl font-bold text-secondary-600">ITI System</span>
+  <aside class="flex h-screen w-[240px] flex-col border-r border-outline-variant bg-surface flex-shrink-0">
+    <!-- Logo -->
+    <div class="px-6 py-5 border-b border-outline-variant flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center">
+        <AppIcon name="domain" class="text-on-surface-variant" />
+      </div>
+      <div>
+        <div class="font-medium text-sm text-on-surface">ITI Portal</div>
+        <div class="text-xs text-secondary mt-0.5">Academic Management</div>
+      </div>
     </div>
 
-    <nav class="flex-1 overflow-y-auto space-y-1 p-4">
+    <!-- Nav Links -->
+    <nav class="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
       <router-link
         v-for="link in navLinks"
         :key="link.to"
         :to="link.to"
-        class="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors"
-        :class="[
-          isActive(link.to)
-            ? 'bg-secondary-50 text-secondary-700'
-            : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
-        ]"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors border-l-4"
+        :class="isActive(link.to)
+          ? 'bg-[#A9CFE0]/10 text-[#345968] border-[#A9CFE0] font-medium'
+          : 'text-on-surface-variant border-transparent hover:bg-surface-container-high hover:text-on-surface'"
       >
-        <AppIcon :name="link.icon" :size="20" />
+        <AppIcon :name="link.icon" :fill="isActive(link.to)" :size="20" />
         {{ link.name }}
       </router-link>
     </nav>
 
-    <div class="border-t border-neutral-200 p-4">
-      <div v-if="auth.user" class="mb-4 px-3">
-        <p class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-          {{ auth.user.role.replace('_', ' ') }}
-        </p>
-        <p class="text-sm font-medium text-neutral-900 truncate">
-          {{ auth.user.name || auth.user.email }}
-        </p>
+    <!-- User + Logout -->
+    <div class="border-t border-outline-variant p-4">
+      <div v-if="auth.user" class="mb-3 px-1 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-[#A9CFE0] flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+          {{ auth.user.name?.charAt(0).toUpperCase() || 'U' }}
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-on-surface truncate">{{ auth.user.name }}</p>
+          <p class="text-xs text-on-surface-variant capitalize truncate">{{ auth.user.role?.replace('_', ' ') }}</p>
+        </div>
       </div>
-
       <button
         @click="handleLogout"
-        class="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50 transition-colors"
+        class="flex w-full items-center gap-3 px-3 py-2 text-sm font-medium text-[#ba1a1a] rounded-lg hover:bg-[#ffdad6] transition-colors"
       >
         <AppIcon name="logout" :size="20" />
         Logout
