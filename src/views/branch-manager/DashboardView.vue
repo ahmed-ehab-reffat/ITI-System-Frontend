@@ -31,28 +31,24 @@ onMounted(() => {
       <!-- Stat Cards -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Students"
+          label="Total Students"
           :value="analyticsStore.branchData.total_students"
           icon="group"
-          color="blue"
         />
         <StatCard
-          title="Active Cohorts"
+          label="Active Cohorts"
           :value="analyticsStore.branchData.active_cohorts_count"
           icon="school"
-          color="green"
         />
         <StatCard
-          title="At Risk"
+          label="At Risk"
           :value="analyticsStore.branchData.at_risk_count"
           icon="warning"
-          color="red"
         />
         <StatCard
-          title="Instructors"
+          label="Instructors"
           :value="analyticsStore.branchData.instructors_count"
           icon="badge"
-          color="purple"
         />
       </div>
 
