@@ -25,17 +25,21 @@ const navigation = computed(() => {
     links.push({ name: 'Dashboard', path: '/admin', icon: 'dashboard' })
     links.push({ name: 'Setup', path: '/admin/setup', icon: 'settings' })
     links.push({ name: 'Students', path: '/admin/students', icon: 'group' })
+    links.push({ name: 'Grades', path: '/admin/grades', icon: 'grade' })
     links.push({ name: 'Announcements', path: '/admin/announcements', icon: 'campaign' })
   }
   
   if (role === 'instructor') {
     links.push({ name: 'Dashboard', path: '/instructor/dashboard', icon: 'dashboard' })
+    links.push({ name: 'Grades', path: '/instructor/grades', icon: 'grade' })
     links.push({ name: 'Attendance', path: '/instructor/qr/select', icon: 'fact_check' })
     links.push({ name: 'Announcements', path: '/announcements', icon: 'campaign' })
   }
   
   if (role === 'student') {
     links.push({ name: 'Dashboard', path: '/student/dashboard', icon: 'dashboard' })
+    links.push({ name: 'Grades', path: '/student/grades', icon: 'grade' })
+    links.push({ name: 'Submissions', path: '/student/submissions', icon: 'upload_file' })
     links.push({ name: 'Check In', path: '/student/checkin', icon: 'qr_code_scanner' })
     links.push({ name: 'Announcements', path: '/announcements', icon: 'campaign' })
   }

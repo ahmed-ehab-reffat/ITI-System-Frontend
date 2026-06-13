@@ -61,15 +61,39 @@ const routes = [
     meta: { requiresAuth: true, role: 'track_admin' },
   },
   {
+    path: '/admin/grades',
+    name: 'admin-grades',
+    component: () => import('@/views/track-admin/GradesView.vue'),
+    meta: { requiresAuth: true, role: 'track_admin' },
+  },
+  {
     path: '/instructor/dashboard',
     name: 'instructor-dashboard',
     component: () => import('@/views/instructor/InstructorDashboard.vue'),
     meta: { requiresAuth: true, role: 'instructor' },
   },
   {
+    path: '/instructor/grades',
+    name: 'instructor-grades',
+    component: () => import('@/views/instructor/GradesView.vue'),
+    meta: { requiresAuth: true, role: 'instructor' },
+  },
+  {
     path: '/student/dashboard',
     name: 'student-dashboard',
     component: () => import('@/views/student/StudentDashboard.vue'),
+    meta: { requiresAuth: true, role: 'student' },
+  },
+  {
+    path: '/student/grades',
+    name: 'student-grades',
+    component: () => import('@/views/student/GradesView.vue'),
+    meta: { requiresAuth: true, role: 'student' },
+  },
+  {
+    path: '/student/submissions',
+    name: 'student-submissions',
+    component: () => import('@/views/student/SubmissionsView.vue'),
     meta: { requiresAuth: true, role: 'student' },
   },
   // Announcements
