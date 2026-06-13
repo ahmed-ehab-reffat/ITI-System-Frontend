@@ -160,8 +160,13 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore()
 
-  const isAuthenticated = authStore.isLoggedIn
-  const userRole = authStore.user?.role
+  // Read directly from localStorage as well so the guard is reliable on hard refresh
+  // before Pinia has a chance to fully hydrate from the store.
+  const token = authStore.token || localStorage.getItem('auth_token')
+  const storedUser = authStore.user || JSON.parse(localStorage.getItem('auth_user') || 'null')
+
+  const isAuthenticated = !!token
+  const userRole = storedUser?.role
 
   // 1. Unauthenticated: Redirect to login if path requires auth
   if (to.meta.requiresAuth && !isAuthenticated) {
@@ -174,20 +179,15 @@ router.beforeEach((to) => {
 
     // A. If accessing a guest route (like /login), redirect to dashboard
     if (to.meta.guest) {
-      if (to.name !== dashboard) {
-        return { name: dashboard }
-      }
+      return { name: dashboard }
     }
 
     // B. If accessing a route with a specific role requirement that doesn't match
     if (to.meta.requiresAuth && to.meta.role && to.meta.role !== userRole) {
-      // Allow track_admin to access branch_manager dashboard layout
+      // Allow track_admin to access shared manager layout routes
       if (userRole === 'track_admin' && to.name === 'manager-dashboard') {
         return
       }
-      
-      // CRITICAL: Only redirect if we aren't already at the target dashboard
-      // This prevents infinite loops when multiple roles (e.g., track_admin) map to same dashboard
       if (to.name !== dashboard) {
         return { name: dashboard }
       }
