@@ -27,7 +27,13 @@ const routes = [
   {
     path: '/manager/dashboard',
     name: 'manager-dashboard',
-    component: () => import('@/views/manager/ManagerDashboard.vue'),
+    component: () => import('@/views/branch-manager/DashboardView.vue'),
+    meta: { requiresAuth: true, role: 'branch_manager' },
+  },
+  {
+    path: '/manager/users',
+    name: 'manager-users',
+    component: () => import('@/views/branch-manager/UsersView.vue'),
     meta: { requiresAuth: true, role: 'branch_manager' },
   },
   {
