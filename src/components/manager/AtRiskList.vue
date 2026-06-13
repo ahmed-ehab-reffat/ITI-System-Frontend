@@ -19,6 +19,7 @@ defineProps({
     <template #header>
       <th>Student Name</th>
       <th>Email</th>
+      <th>Reason</th>
       <th class="text-right">Status</th>
     </template>
     
@@ -26,6 +27,7 @@ defineProps({
       <tr v-for="student in students" :key="student.id">
         <td class="font-medium text-on-surface">{{ student.name }}</td>
         <td class="text-on-surface-variant">{{ student.email }}</td>
+        <td class="text-on-surface-variant text-sm max-w-[200px] truncate" :title="student.at_risk_reason">{{ student.at_risk_reason || '—' }}</td>
         <td class="text-right">
           <StatusBadge label="At Risk" variant="error" />
         </td>
