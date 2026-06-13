@@ -46,7 +46,7 @@ defineProps({
   </div>
 </template>
 
-<style>
+<style scoped>
 @reference "../../assets/main.css";
 
 /* Style for th elements within the header slot */

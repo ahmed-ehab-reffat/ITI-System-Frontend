@@ -18,6 +18,30 @@
   --color-primary-dark: #345968;
   --color-secondary: #606F69;
   
+  /* Primary Scale */
+  --color-primary-50: #f0f7fa;
+  --color-primary-100: #e0f0f5;
+  --color-primary-200: #bce0ec;
+  --color-primary-300: #a9cfe0;
+  --color-primary-400: #66afcc;
+  --color-primary-500: #3a8eb5;
+  --color-primary-600: #2d6e8c;
+  --color-primary-700: #345968;
+  --color-primary-800: #1f3741;
+  --color-primary-900: #14242a;
+
+  /* Secondary Scale */
+  --color-secondary-50: #f0f3f2;
+  --color-secondary-100: #dbe4df;
+  --color-secondary-200: #bbcbc5;
+  --color-secondary-300: #9cb2aa;
+  --color-secondary-400: #809a90;
+  --color-secondary-500: #606F69;
+  --color-secondary-600: #49544f;
+  --color-secondary-700: #3c4541;
+  --color-secondary-800: #2d3431;
+  --color-secondary-900: #1a1e1c;
+  
   --color-outline: #E5E7EB;
   --color-outline-variant: #E5E7EB;
   

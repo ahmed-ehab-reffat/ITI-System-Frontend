@@ -33,8 +33,9 @@ export const useCohortsStore = defineStore('cohorts', () => {
     loading.value = true
     try {
       const { data } = await api.post('/cohorts', payload)
-      cohorts.value.push(data)
-      return data
+      const cohort = data.data || data
+      cohorts.value.push(cohort)
+      return cohort
     } finally {
       loading.value = false
     }
@@ -44,14 +45,21 @@ export const useCohortsStore = defineStore('cohorts', () => {
     loading.value = true
     try {
       const { data } = await api.put(`/cohorts/${id}`, payload)
+      const cohort = data.data || data
       const index = cohorts.value.findIndex(c => c.id === id)
-      if (index !== -1) {
-        cohorts.value[index] = data
-      }
-      if (currentCohort.value && currentCohort.value.id === id) {
-        currentCohort.value = data
-      }
-      return data
+      if (index !== -1) cohorts.value[index] = cohort
+      if (currentCohort.value?.id === id) currentCohort.value = cohort
+      return cohort
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function remove(id) {
+    loading.value = true
+    try {
+      await api.delete(`/cohorts/${id}`)
+      cohorts.value = cohorts.value.filter(c => c.id !== id)
     } finally {
       loading.value = false
     }
@@ -64,6 +72,7 @@ export const useCohortsStore = defineStore('cohorts', () => {
     fetchAll,
     fetchOne,
     create,
-    update
+    update,
+    remove,
   }
 })
