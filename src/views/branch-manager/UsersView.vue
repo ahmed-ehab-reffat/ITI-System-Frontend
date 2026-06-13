@@ -22,6 +22,8 @@ const formData = ref({
   email: '',
   role: 'student',
   password: '',
+  compensation_type: 'hourly',
+  compensation_rate: 0,
 })
 
 const tabs = [
@@ -42,13 +44,21 @@ const filteredUsers = computed(() => {
 
 function openCreateModal() {
   modalMode.value = 'create'
-  formData.value = { name: '', email: '', role: 'student', password: '' }
+  formData.value = { 
+    name: '', email: '', role: 'student', password: '',
+    compensation_type: 'hourly', compensation_rate: 0
+  }
   isModalOpen.value = true
 }
 
 function openEditModal(user) {
   modalMode.value = 'edit'
-  formData.value = { ...user, password: '' }
+  formData.value = { 
+    ...user, 
+    password: '',
+    compensation_type: user.compensation_type || 'hourly',
+    compensation_rate: user.compensation_rate || 0
+  }
   isModalOpen.value = true
 }
 
@@ -58,6 +68,11 @@ async function handleSubmit() {
       name: formData.value.name,
       email: formData.value.email,
       role: formData.value.role,
+    }
+
+    if (formData.value.role === 'instructor') {
+      payload.compensation_type = formData.value.compensation_type
+      payload.compensation_rate = formData.value.compensation_rate
     }
     
     if (formData.value.password) {
@@ -73,7 +88,12 @@ async function handleSubmit() {
     }
     isModalOpen.value = false
   } catch (e) {
-    toast.error(e.response?.data?.message || 'Failed to save user')
+    if (e.response?.data?.errors) {
+      const errMsgs = Object.values(e.response.data.errors).flat().join('\n')
+      toast.error(errMsgs)
+    } else {
+      toast.error(e.response?.data?.message || 'Failed to save user')
+    }
   }
 }
 
@@ -90,8 +110,12 @@ async function handleDeactivate(id) {
       await usersStore.deactivate(id)
       toast.success('User deactivated')
     } catch (e) {
+    if (e.response?.data?.errors) {
+      toast.error(Object.values(e.response.data.errors).flat().join('\n'))
+    } else {
       toast.error(e.response?.data?.message || 'Failed to deactivate user')
     }
+  }
   }
 }
 </script>
@@ -183,6 +207,30 @@ async function handleDeactivate(id) {
             <option value="instructor">Instructor</option>
             <option value="student">Student</option>
           </select>
+        </div>
+
+        <div v-if="formData.role === 'instructor'" class="space-y-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200 mt-2">
+          <h4 class="text-sm font-semibold text-neutral-800">Instructor Information</h4>
+          
+          <div class="space-y-1">
+            <label class="block text-sm font-medium text-neutral-700">Compensation Type</label>
+            <select
+              v-model="formData.compensation_type"
+              class="block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            >
+              <option value="hourly">Hourly</option>
+              <option value="monthly">Monthly</option>
+              <option value="points">Points</option>
+            </select>
+          </div>
+          
+          <AppInput
+            label="Rate / Amount"
+            type="number"
+            v-model="formData.compensation_rate"
+            placeholder="e.g. 50"
+            required
+          />
         </div>
 
         <AppInput
