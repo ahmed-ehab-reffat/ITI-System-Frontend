@@ -1,4 +1,10 @@
 {
+  
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true
+  },
+
   "files": [],
   "references": [
     {

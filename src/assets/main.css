@@ -1,35 +1,53 @@
-@import './base.css';
+@import "tailwindcss";
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
+@theme {
+  /* Primary - light blue */
+  --color-primary-50: #f0f8fc;
+  --color-primary-100: #e1f1f9;
+  --color-primary-200: #c3e3f3;
+  --color-primary-300: #a9cfe0;
+  --color-primary-400: #8bbcd1;
+  --color-primary-500: #6da8c2;
+  --color-primary-600: #5089a3;
+  --color-primary-700: #3a6b80;
+  --color-primary-800: #264a5a;
+  --color-primary-900: #142a33;
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
+  /* Secondary - muted teal/gray */
+  --color-secondary-50: #eef2f1;
+  --color-secondary-100: #dde6e4;
+  --color-secondary-200: #bccdc9;
+  --color-secondary-300: #9bb3ae;
+  --color-secondary-400: #7a9a93;
+  --color-secondary-500: #606f69;
+  --color-secondary-600: #4d5955;
+  --color-secondary-700: #3a4441;
+  --color-secondary-800: #272e2c;
+  --color-secondary-900: #131716;
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
+  /* Tertiary - peach */
+  --color-tertiary-50: #fef9f4;
+  --color-tertiary-100: #fdf2e8;
+  --color-tertiary-200: #fbe5d1;
+  --color-tertiary-300: #f3bf9b;
+  --color-tertiary-400: #ecaa7d;
+  --color-tertiary-500: #e6955f;
+  --color-tertiary-600: #cc7a3f;
+  --color-tertiary-700: #995c2f;
+  --color-tertiary-800: #663d20;
+  --color-tertiary-900: #331f10;
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
+  /* Neutral - gray */
+  --color-neutral-50: #f5f5f5;
+  --color-neutral-100: #e8e8e8;
+  --color-neutral-200: #d1d1d2;
+  --color-neutral-300: #b9b9bb;
+  --color-neutral-400: #a2a2a4;
+  --color-neutral-500: #8a8b8d;
+  --color-neutral-600: #767778;
+  --color-neutral-700: #595a5b;
+  --color-neutral-800: #3d3d3e;
+  --color-neutral-900: #202021;
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+  --font-sans: "Inter", sans-serif;
 }

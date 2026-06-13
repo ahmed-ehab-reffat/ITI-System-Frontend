@@ -6,15 +6,21 @@ import { useAuthStore } from '@/stores/auth'
  * @param {string} role
  * @returns {string}
  */
-function getDashboardRoute(role) {
-  const dashboards = {
+type UserRole =
+  | 'branch_manager'
+  | 'track_admin'
+  | 'instructor'
+  | 'student'
+
+function getDashboardRoute(role?: UserRole) {
+  const dashboards: Record<UserRole, string> = {
     branch_manager: 'manager-dashboard',
-    track_admin: 'manager-dashboard', // Assuming track_admin uses the same for now or fallback
+    track_admin: 'manager-dashboard',
     instructor: 'instructor-dashboard',
     student: 'student-dashboard',
   }
 
-  return dashboards[role] || 'login'
+  return role ? dashboards[role] : 'login'
 }
 
 const routes = [
@@ -28,19 +34,24 @@ const routes = [
     path: '/manager/dashboard',
     name: 'manager-dashboard',
     component: () => import('@/views/manager/ManagerDashboard.vue'),
-    meta: { requiresAuth: true, role: 'branch_manager' },
+   // meta: { requiresAuth: true, role: 'branch_manager' },
+       meta: { guest: true },
+
   },
   {
     path: '/instructor/dashboard',
     name: 'instructor-dashboard',
     component: () => import('@/views/instructor/InstructorDashboard.vue'),
-    meta: { requiresAuth: true, role: 'instructor' },
+   // meta: { requiresAuth: true, role: 'instructor' },
+       meta: { guest: true },
+
   },
   {
     path: '/student/dashboard',
     name: 'student-dashboard',
     component: () => import('@/views/student/StudentDashboard.vue'),
-    meta: { requiresAuth: true, role: 'student' },
+    //meta: { requiresAuth: true, role: 'student' },
+    meta: { guest: true },
   },
 ]
 

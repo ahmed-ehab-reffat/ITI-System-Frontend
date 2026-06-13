@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import api from '@/api/axios'
+import type { LoginCredentials } from '@/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
   /**
@@ -28,21 +29,20 @@ export const useAuthStore = defineStore('auth', () => {
    * @param {{ email: string, password: string }} credentials
    * @returns {Promise<object>} The authenticated user object.
    */
-  async function login(credentials) {
-    const response = await api.post('/auth/login', credentials)
 
-    const { token: newToken, user: newUser } = response.data
+async function login(credentials: LoginCredentials) {
+  const response = await api.post('/auth/login', credentials)
 
-    // Update reactive state
-    token.value = newToken
-    user.value = newUser
+  const { token: newToken, user: newUser } = response.data
 
-    // Persist to localStorage
-    localStorage.setItem('auth_token', newToken)
-    localStorage.setItem('auth_user', JSON.stringify(newUser))
+  token.value = newToken
+  user.value = newUser
 
-    return newUser
-  }
+  localStorage.setItem('auth_token', newToken)
+  localStorage.setItem('auth_user', JSON.stringify(newUser))
+
+  return newUser
+}
 
   /**
    * Clears the authenticated session from state and localStorage.
