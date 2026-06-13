@@ -22,8 +22,9 @@ const formData = ref({
   email: '',
   role: 'student',
   password: '',
-  compensation_type: 'hourly',
-  compensation_rate: 0,
+  compensation_type: 'external',
+  hourly_rate: 0,
+  fixed_salary: 0,
 })
 
 const tabs = [
@@ -46,7 +47,7 @@ function openCreateModal() {
   modalMode.value = 'create'
   formData.value = { 
     name: '', email: '', role: 'student', password: '',
-    compensation_type: 'hourly', compensation_rate: 0
+    compensation_type: 'external', hourly_rate: 0, fixed_salary: 0
   }
   isModalOpen.value = true
 }
@@ -56,8 +57,9 @@ function openEditModal(user) {
   formData.value = { 
     ...user, 
     password: '',
-    compensation_type: user.compensation_type || 'hourly',
-    compensation_rate: user.compensation_rate || 0
+    compensation_type: user.compensation_type || 'external',
+    hourly_rate: user.hourly_rate || 0,
+    fixed_salary: user.fixed_salary || 0
   }
   isModalOpen.value = true
 }
@@ -70,9 +72,13 @@ async function handleSubmit() {
       role: formData.value.role,
     }
 
-    if (formData.value.role === 'instructor') {
+    if (['instructor', 'track_admin'].includes(formData.value.role)) {
       payload.compensation_type = formData.value.compensation_type
-      payload.compensation_rate = formData.value.compensation_rate
+      payload.hourly_rate = formData.value.hourly_rate
+      
+      if (formData.value.role === 'instructor' && formData.value.compensation_type === 'internal') {
+        payload.fixed_salary = formData.value.fixed_salary
+      }
     }
     
     if (formData.value.password) {
@@ -209,26 +215,35 @@ async function handleDeactivate(id) {
           </select>
         </div>
 
-        <div v-if="formData.role === 'instructor'" class="space-y-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200 mt-2">
-          <h4 class="text-sm font-semibold text-neutral-800">Instructor Information</h4>
+        <div v-if="['instructor', 'track_admin'].includes(formData.role)" class="space-y-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200 mt-2">
+          <h4 class="text-sm font-semibold text-neutral-800">Compensation Details</h4>
           
           <div class="space-y-1">
             <label class="block text-sm font-medium text-neutral-700">Compensation Type</label>
             <select
               v-model="formData.compensation_type"
               class="block w-full rounded-md border-neutral-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              required
             >
-              <option value="hourly">Hourly</option>
-              <option value="monthly">Monthly</option>
-              <option value="points">Points</option>
+              <option value="external">External (Hourly only)</option>
+              <option value="internal">Internal (Staff)</option>
             </select>
           </div>
           
           <AppInput
-            label="Rate / Amount"
+            label="Hourly Rate"
             type="number"
-            v-model="formData.compensation_rate"
+            v-model="formData.hourly_rate"
             placeholder="e.g. 50"
+            required
+          />
+
+          <AppInput
+            v-if="formData.role === 'instructor' && formData.compensation_type === 'internal'"
+            label="Fixed Salary (Monthly)"
+            type="number"
+            v-model="formData.fixed_salary"
+            placeholder="e.g. 5000"
             required
           />
         </div>
