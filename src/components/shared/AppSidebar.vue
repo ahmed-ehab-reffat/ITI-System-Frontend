@@ -44,6 +44,18 @@ const navLinks = computed(() => {
   if (role === 'student') {
     return [
       { name: 'Dashboard',     icon: 'dashboard',        to: '/student/dashboard' },
+      {
+      name: 'Attendance',
+      icon: 'fact_check',
+      to: '/student/attendance',
+    },
+
+    {
+      name: 'Excuse Requests',
+      icon: 'assignment',
+      to: '/student/excuses',
+    },
+
       { name: 'Grades',        icon: 'grade',            to: '/student/grades' },
       { name: 'Submissions',   icon: 'upload_file',      to: '/student/submissions' },
       { name: 'Check In',      icon: 'qr_code_scanner',  to: '/student/checkin' },

@@ -1,8 +1,8 @@
 <script setup>
-import { watch } from 'vue'
+import { watch, computed } from 'vue'
 
 const props = defineProps({
-  show: {
+  modelValue: {
     type: Boolean,
     required: true,
   },
@@ -20,7 +20,12 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['update:modelValue'])
+
+const show = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+})
 
 const sizes = {
   sm: 'max-w-sm',
@@ -30,20 +35,16 @@ const sizes = {
 }
 
 function close() {
-  emit('close')
+  show.value = false
 }
 
 function onBackdropClick() {
   if (props.closeOnBackdrop) close()
 }
 
-// Prevent background scroll while modal is open
-watch(
-  () => props.show,
-  (open) => {
-    document.body.style.overflow = open ? 'hidden' : ''
-  }
-)
+watch(show, (open) => {
+  document.body.style.overflow = open ? 'hidden' : ''
+})
 </script>
 
 <template>
@@ -58,35 +59,29 @@ watch(
           class="w-full rounded-lg bg-white shadow-xl"
           :class="sizes[size]"
           role="dialog"
-          aria-modal="true"
         >
+          <!-- Header -->
           <div
             v-if="title || $slots.header"
-            class="flex items-center justify-between border-b border-neutral-100 px-5 py-4"
+            class="flex items-center justify-between border-b px-5 py-4"
           >
             <slot name="header">
-              <h3 class="text-base font-semibold text-neutral-800">{{ title }}</h3>
+              <h3 class="text-base font-semibold">{{ title }}</h3>
             </slot>
-            <button
-              class="rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
-              aria-label="Close"
-              @click="close"
-            >
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fill-rule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-            </button>
+
+            <button @click="close">✕</button>
           </div>
 
+          <!-- Body -->
           <div class="px-5 py-4">
             <slot />
           </div>
 
-          <div v-if="$slots.footer" class="flex justify-end gap-2 border-t border-neutral-100 px-5 py-3">
+          <!-- Footer -->
+          <div
+            v-if="$slots.footer"
+            class="flex justify-end gap-2 border-t px-5 py-3"
+          >
             <slot name="footer" />
           </div>
         </div>

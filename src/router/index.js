@@ -135,6 +135,24 @@ const routes = [
     component: () => import('@/views/branch-manager/BillingView.vue'),
     meta: { requiresAuth: true, role: 'branch_manager' },
   },
+
+  {
+  path: '/student/attendance',
+  name: 'student-attendance',
+  component: () =>
+    import('@/views/student/AttendanceView.vue'),
+      meta: { requiresAuth: true, role: 'student' },
+
+},
+
+{
+  path: '/student/excuses',
+  name: 'student-excuses',
+  component: () =>
+    import('@/views/student/ExcuseRequestsView.vue'),
+    meta: { requiresAuth: true, role: 'student' },
+
+},
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

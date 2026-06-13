@@ -5,19 +5,12 @@ import Button from '@/components/ui/Button.vue'
 import { validateAttachment } from '@/stores/excuseRequests'
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
-  // Only the student's own absent attendance records: [{ id, date, course_name }]
+  modelValue: Boolean,
   absences: {
     type: Array,
     default: () => [],
   },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
+  loading: Boolean,
 })
 
 const emit = defineEmits(['update:modelValue', 'submit'])
@@ -42,15 +35,23 @@ watch(
 )
 
 const canSubmit = computed(
-  () => !!attendanceRecordId.value && reason.value.trim().length > 0 && !fileError.value
+  () =>
+    attendanceRecordId.value &&
+    reason.value.trim().length > 0 &&
+    !fileError.value
 )
 
 function formatDate(value) {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(value).toLocaleDateString([], {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
+
 function handleFileChange(event) {
-  const file = event.target.files?.[0] ?? null
+  const file = event.target.files?.[0]
   fileError.value = ''
   attachment.value = null
 
@@ -59,7 +60,7 @@ function handleFileChange(event) {
   const error = validateAttachment(file)
   if (error) {
     fileError.value = error
-    event.target.value = '' 
+    event.target.value = ''
     return
   }
 
@@ -72,6 +73,7 @@ function close() {
 
 function submit() {
   if (!canSubmit.value) return
+
   emit('submit', {
     attendance_record_id: attendanceRecordId.value,
     reason: reason.value.trim(),
@@ -82,63 +84,117 @@ function submit() {
 
 <template>
   <Modal
-    :model-value="modelValue"
+    :modelValue="modelValue"
+    @update:modelValue="(v) => emit('update:modelValue', v)"
     title="New Excuse Request"
-    size="md"
-    @update:model-value="(v) => emit('update:modelValue', v)"
+    size="lg"
   >
-    <div class="space-y-4">
-      <div>
-        <label class="mb-1 block text-sm font-medium text-neutral-700">
-          Absence <span class="text-red-500">*</span>
-        </label>
-        <select
-          v-model="attendanceRecordId"
-          class="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
-        >
-          <option value="" disabled>Select the absence you're excusing…</option>
-          <option v-for="record in absences" :key="record.id" :value="record.id">
-            {{ formatDate(record.date ?? record.session_date) }} — {{ record.course_name || record.type }}
-          </option>
-        </select>
-        <p v-if="absences.length === 0" class="mt-1 text-xs text-neutral-500">
-          You have no absent sessions to excuse.
+    <div class="space-y-6">
+
+      <!-- Header Info Card -->
+      <div class="rounded-lg border bg-slate-50 p-4">
+        <p class="text-sm text-slate-600">
+          Select an absent session and submit a justification request.
+        </p>
+        <p class="text-xs text-slate-400 mt-1">
+          Only “absent” sessions are eligible for excuses.
         </p>
       </div>
 
+      <!-- Absence Selection -->
       <div>
-        <label class="mb-1 block text-sm font-medium text-neutral-700">
+        <label class="mb-2 block text-sm font-medium text-slate-700">
+          Absent Session <span class="text-red-500">*</span>
+        </label>
+
+        <select
+          v-model="attendanceRecordId"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        >
+          <option value="" disabled>Select a session</option>
+
+          <option
+            v-for="record in absences"
+            :key="record.id"
+            :value="record.id"
+          >
+            {{ formatDate(record.session_date) }} • {{ record.status }}
+          </option>
+        </select>
+
+        <p v-if="absences.length === 0" class="mt-2 text-xs text-slate-500">
+          No absent sessions available to excuse.
+        </p>
+      </div>
+
+      <!-- Reason -->
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-700">
           Reason <span class="text-red-500">*</span>
         </label>
+
         <textarea
           v-model="reason"
           rows="4"
-          placeholder="Explain why you missed this session…"
-          class="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+          placeholder="Explain why you missed this session..."
+          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
         />
       </div>
 
+      <!-- File Upload -->
       <div>
-        <label class="mb-1 block text-sm font-medium text-neutral-700">
-          Attachment <span class="text-neutral-400">(optional, PDF or image, max 1MB)</span>
+        <label class="mb-2 block text-sm font-medium text-slate-700">
+          Supporting Document
+          <span class="text-xs text-slate-400">(optional)</span>
         </label>
-        <input
-          ref="fileInputRef"
-          type="file"
-          accept=".pdf,image/*"
-          class="block w-full text-sm text-neutral-600 file:mr-3 file:rounded-md file:border-0 file:bg-neutral-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-neutral-700 hover:file:bg-neutral-200"
-          @change="handleFileChange"
-        />
-        <p v-if="fileError" class="mt-1 text-xs text-red-600">{{ fileError }}</p>
-        <p v-else-if="attachment" class="mt-1 text-xs text-green-600">
-          {{ attachment.name }} ready to upload.
-        </p>
+
+        <div
+          class="rounded-lg border-2 border-dashed border-slate-300 p-4 text-center hover:border-blue-400 transition"
+        >
+          <input
+            ref="fileInputRef"
+            type="file"
+            accept=".pdf,image/*"
+            class="hidden"
+            @change="handleFileChange"
+          />
+
+          <button
+            type="button"
+            class="text-sm font-medium text-blue-600 hover:underline"
+            @click="fileInputRef?.click()"
+          >
+            Click to upload file
+          </button>
+
+          <p class="mt-1 text-xs text-slate-500">
+            PDF or image, max 1MB
+          </p>
+
+          <p v-if="attachment" class="mt-2 text-xs text-green-600">
+            ✔ {{ attachment.name }}
+          </p>
+
+          <p v-if="fileError" class="mt-2 text-xs text-red-600">
+            {{ fileError }}
+          </p>
+        </div>
       </div>
     </div>
 
+    <!-- Footer -->
     <template #footer>
-      <Button variant="outline" @click="close">Cancel</Button>
-      <Button :disabled="!canSubmit" :loading="loading" @click="submit">Submit Request</Button>
+      <Button variant="outline" @click="close">
+        Cancel
+      </Button>
+
+      <Button
+        :loading="loading"
+        :disabled="!canSubmit"
+        @click="submit"
+      >
+        Submit Request
+      </Button>
     </template>
   </Modal>
 </template>
