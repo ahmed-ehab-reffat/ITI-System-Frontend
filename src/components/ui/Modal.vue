@@ -2,7 +2,7 @@
 import { watch } from 'vue'
 
 const props = defineProps({
-  modelValue: {
+  show: {
     type: Boolean,
     required: true,
   },
@@ -20,7 +20,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue', 'close'])
+const emit = defineEmits(['close'])
 
 const sizes = {
   sm: 'max-w-sm',
@@ -30,7 +30,6 @@ const sizes = {
 }
 
 function close() {
-  emit('update:modelValue', false)
   emit('close')
 }
 
@@ -40,7 +39,7 @@ function onBackdropClick() {
 
 // Prevent background scroll while modal is open
 watch(
-  () => props.modelValue,
+  () => props.show,
   (open) => {
     document.body.style.overflow = open ? 'hidden' : ''
   }
@@ -51,7 +50,7 @@ watch(
   <Teleport to="body">
     <Transition name="modal-fade">
       <div
-        v-if="modelValue"
+        v-if="show"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         @click.self="onBackdropClick"
       >
