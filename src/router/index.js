@@ -37,6 +37,18 @@ const routes = [
     meta: { requiresAuth: true, role: 'branch_manager' },
   },
   {
+    path: '/manager/cohorts',
+    name: 'manager-cohorts',
+    component: () => import('@/views/branch-manager/CohortsView.vue'),
+    meta: { requiresAuth: true, role: 'branch_manager' },
+  },
+  {
+    path: '/manager/tracks',
+    name: 'manager-tracks',
+    component: () => import('@/views/branch-manager/TracksView.vue'),
+    meta: { requiresAuth: true, role: 'branch_manager' },
+  },
+  {
     path: '/admin',
     name: 'admin-dashboard',
     component: () => import('@/views/track-admin/DashboardView.vue'),
@@ -120,7 +132,7 @@ const routes = [
   {
     path: '/manager/billing',
     name: 'billing',
-    component: () => import('@/views/manager/BillingView.vue'),
+    component: () => import('@/views/branch-manager/BillingView.vue'),
     meta: { requiresAuth: true, role: 'branch_manager' },
   },
   {
