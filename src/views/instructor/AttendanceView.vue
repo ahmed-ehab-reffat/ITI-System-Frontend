@@ -43,7 +43,11 @@ onMounted(async () => {
   }
 
   try {
+    
     await sessionsStore.fetchForCohort(cohortId)
+    sessionsStore.sessions = sessionsStore.sessions.filter(
+      (s) => s.instructor_id === user.value.id
+    )
 
     if (sessionsStore.sessions.length > 0) {
       selectedSessionId.value = sessionsStore.sessions[0].id
@@ -61,7 +65,6 @@ async function onSessionChange() {
 
 async function loadAttendance() {
   if (!selectedSessionId.value) return
-
   try {
     await attendanceStore.fetchForSession(selectedSessionId.value)
   } catch {
@@ -71,21 +74,13 @@ async function loadAttendance() {
 
 function formatTime(value) {
   if (!value) return '—'
-  return new Date(value).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
 async function handleAddRecord({ student_id, status }) {
   savingRecord.value = true
-
   try {
-    await attendanceStore.recordAttendance(selectedSessionId.value, {
-      student_id,
-      status,
-    })
-
+    await attendanceStore.recordAttendance(selectedSessionId.value, { student_id, status })
     toast.success('Attendance record saved.')
     showRecordModal.value = false
   } catch (err) {
@@ -97,7 +92,6 @@ async function handleAddRecord({ student_id, status }) {
 
 async function markDelivered() {
   delivering.value = true
-
   try {
     await sessionsStore.deliver(selectedSessionId.value)
     toast.success('Session marked as delivered.')
@@ -114,10 +108,7 @@ async function markDelivered() {
     <!-- Header / session picker -->
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div class="w-full max-w-sm">
-        <label class="mb-1 block text-sm font-medium text-neutral-700">
-          Session
-        </label>
-
+        <label class="mb-1 block text-sm font-medium text-neutral-700">Session</label>
         <select
           v-model="selectedSessionId"
           class="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
@@ -126,37 +117,20 @@ async function markDelivered() {
           <option v-if="sessionsStore.sessions.length === 0" value="" disabled>
             No sessions assigned
           </option>
-
-          <option
-            v-for="session in sessionsStore.sessions"
-            :key="session.id"
-            :value="session.id"
-          >
+          <option v-for="session in sessionsStore.sessions" :key="session.id" :value="session.id">
             {{ session.title || session.course_name }} — {{ session.date }}
-            <template v-if="session.delivered_at">
-              (Delivered)
-            </template>
+            <template v-if="session.delivered_at"> (Delivered)</template>
           </option>
         </select>
       </div>
 
       <div class="flex gap-2">
-        <Button
-          variant="outline"
-          :disabled="!selectedSessionId"
-          @click="showQr = !showQr"
-        >
+        <Button variant="outline" :disabled="!selectedSessionId" @click="showQr = !showQr">
           {{ showQr ? 'Hide QR' : 'Show QR' }}
         </Button>
-
-        <Button
-          variant="secondary"
-          :disabled="!selectedSessionId"
-          @click="showRecordModal = true"
-        >
+        <Button variant="secondary" :disabled="!selectedSessionId" @click="showRecordModal = true">
           + Manual Record
         </Button>
-
         <Button
           variant="primary"
           :disabled="!selectedSessionId || isDelivered"
@@ -168,11 +142,8 @@ async function markDelivered() {
       </div>
     </div>
 
-    <!-- QR display (FIXED ONLY HERE) -->
-    <QrDisplay
-      v-if="showQr && selectedSessionId"
-      :payload="String(selectedSessionId)"
-    />
+    <!-- QR display -->
+    <QrDisplay v-if="showQr && selectedSessionId" :payload="String(selectedSessionId)" />
 
     <!-- Attendance table -->
     <Table
@@ -185,11 +156,9 @@ async function markDelivered() {
       <template #cell-arrived_at="{ value }">
         {{ formatTime(value) }}
       </template>
-
       <template #cell-left_at="{ value }">
         {{ formatTime(value) }}
       </template>
-
       <template #cell-status="{ value }">
         <Badge v-if="value" :status="value" />
         <span v-else class="text-neutral-400">—</span>
