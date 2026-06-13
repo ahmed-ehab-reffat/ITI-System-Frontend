@@ -43,6 +43,10 @@ const filteredUsers = computed(() => {
   return usersStore.users.filter(u => u.role === activeTab.value)
 })
 
+function isDeactivated(user) {
+  return user.expires_at != null && new Date(user.expires_at) <= new Date()
+}
+
 function openCreateModal() {
   modalMode.value = 'create'
   formData.value = { 
@@ -167,15 +171,21 @@ async function handleDeactivate(id) {
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-200">
-          <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-neutral-50">
-            <td class="px-6 py-4 font-medium text-neutral-900">{{ user.name }}</td>
+          <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-neutral-50" :class="{ 'opacity-50': isDeactivated(user) }">
+            <td class="px-6 py-4 font-medium text-neutral-900">
+              {{ user.name }}
+              <span v-if="isDeactivated(user)" class="ml-2 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-tight rounded bg-red-100 text-red-600">Deactivated</span>
+            </td>
             <td class="px-6 py-4">{{ user.email }}</td>
             <td class="px-6 py-4">
               <span class="capitalize">{{ user.role.replace('_', ' ') }}</span>
             </td>
             <td class="px-6 py-4 text-right space-x-2">
-              <button @click="openEditModal(user)" class="text-secondary-600 hover:text-secondary-700 font-medium">Edit</button>
-              <button @click="handleDeactivate(user.id)" class="text-red-600 hover:text-red-700 font-medium tracking-tight">Deactivate</button>
+              <template v-if="!isDeactivated(user)">
+                <button @click="openEditModal(user)" class="text-secondary-600 hover:text-secondary-700 font-medium">Edit</button>
+                <button @click="handleDeactivate(user.id)" class="text-red-600 hover:text-red-700 font-medium tracking-tight">Deactivate</button>
+              </template>
+              <span v-else class="text-xs text-neutral-400 italic">Deactivated</span>
             </td>
           </tr>
         </tbody>
@@ -239,7 +249,7 @@ async function handleDeactivate(id) {
           />
 
           <AppInput
-            v-if="formData.role === 'instructor' && formData.compensation_type === 'internal'"
+            v-if="['instructor', 'track_admin'].includes(formData.role) && formData.compensation_type === 'internal'"
             label="Fixed Salary (Monthly)"
             type="number"
             v-model="formData.fixed_salary"
