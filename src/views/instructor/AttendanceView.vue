@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useSessionsStore } from '@/stores/sessions'
 import { useAttendanceStore } from '@/stores/attendance'
+import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 
 import Table from '@/components/ui/Table.vue'
@@ -12,6 +13,7 @@ import QrDisplay from '@/components/instructor/QrCodeDisplay.vue'
 
 const sessionsStore = useSessionsStore()
 const attendanceStore = useAttendanceStore()
+const { user } = useAuth()
 const toast = useToast()
 
 const selectedSessionId = ref(null)
@@ -34,8 +36,14 @@ const selectedSession = computed(() =>
 const isDelivered = computed(() => !!selectedSession.value?.delivered_at)
 
 onMounted(async () => {
+  const cohortId = user.value?.cohort_id
+  if (!cohortId) {
+    toast.error('No cohort assigned to your account.')
+    return
+  }
+
   try {
-    await sessionsStore.fetchMine()
+    await sessionsStore.fetchForCohort(cohortId)
 
     if (sessionsStore.sessions.length > 0) {
       selectedSessionId.value = sessionsStore.sessions[0].id

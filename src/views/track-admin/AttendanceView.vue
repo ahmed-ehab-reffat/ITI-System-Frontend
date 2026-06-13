@@ -85,7 +85,7 @@ async function handleStatusChange(record, newStatus) {
   savingRecordId.value = record.id
 
   try {
-    const updated = await attendanceStore.updateRecord(record.id, {
+    const updated = await attendanceStore.updateRecord(selectedSessionId.value, record.id, {
       status: newStatus,
     })
 
