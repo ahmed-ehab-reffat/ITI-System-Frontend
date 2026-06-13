@@ -79,7 +79,7 @@ function formatDate(dateStr) {
       v-else
       v-model="selectedId" 
       @change="handleChange"
-      class="w-full md:w-96 px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-input focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+      class="w-full max-w-sm px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-input focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
     >
       <option v-for="session in sessionList" :key="session.id" :value="session.id" :class="{'font-bold': isToday(session.session_date)}">
         {{ formatDate(session.session_date) }} 
