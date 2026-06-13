@@ -132,7 +132,7 @@ const routes = [
   {
     path: '/manager/billing',
     name: 'billing',
-    component: () => import('@/views/branch-manager/BillingView.vue'),
+    component: () => import('@/views/manager/BillingView.vue'),
     meta: { requiresAuth: true, role: 'branch_manager' },
   },
   {

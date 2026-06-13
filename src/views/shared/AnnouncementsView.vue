@@ -66,7 +66,8 @@ onMounted(async () => {
     // Manager or Track Admin
     try {
       const res = await loadCohorts(() => api.get('/cohorts'))
-      cohorts.value = res.data || []
+      // res is already response.data — handle both plain array and wrapped { data: [...] }
+      cohorts.value = Array.isArray(res) ? res : (res?.data ?? [])
       if (cohorts.value.length > 0) {
         selectedCohortId.value = cohorts.value[0].id
         fetchAnnouncements()
