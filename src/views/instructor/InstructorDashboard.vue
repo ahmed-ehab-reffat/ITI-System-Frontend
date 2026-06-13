@@ -33,18 +33,15 @@ onMounted(async () => {
     <div v-else-if="analytics">
       <h2 class="font-headline-sm text-headline-sm mb-4">Active Engagements</h2>
       
-      <div v-if="!analytics.engagements || analytics.engagements.length === 0" class="bg-surface border border-outline-variant p-8 rounded-xl text-center text-on-surface-variant">
+      <div v-if="!analytics || analytics.length === 0" class="bg-surface border border-outline-variant p-8 rounded-xl text-center text-on-surface-variant">
         You have no active engagements.
       </div>
       
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <EngagementCard
-          v-for="eng in analytics.engagements"
+          v-for="eng in analytics"
           :key="eng.engagement_id"
-          :engagement-id="eng.engagement_id"
-          :lab-group="eng.lab_group"
-          :student-count="eng.student_count"
-          :submissions="eng.submissions"
+          :engagement="eng"
         />
       </div>
     </div>

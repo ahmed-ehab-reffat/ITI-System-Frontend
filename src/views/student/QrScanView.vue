@@ -68,40 +68,39 @@ async function processPayload(payload) {
   nfc.stopScan()
   
   try {
-    // Basic validation of payload format before sending
-    // Payload should be JWT-like: Base64UrlEncoded JSON . signature
-    const parts = payload.split('.')
-    if (parts.length !== 2) throw new Error('Invalid payload format')
-    
-    // Decode first part to get session ID
-    const decoded = JSON.parse(atob(parts[0]))
-    if (!decoded.session_id) throw new Error('Missing session ID')
-    
-    // Call API
+    // Backend payload format is: {sessionId}|{timestamp}|{hmac_signature}
+    const parts = payload.split('|')
+    if (parts.length !== 3) throw new Error('Invalid QR code format.')
+
+    const sessionId = parts[0]
+
+    // Call API — backend verifies signature and expiry
     const response = await api.post('/qr/scan', {
-      session_id: decoded.session_id,
+      session_id: sessionId,
       payload: payload
     })
     
     // Display appropriate message
-    if (response.data.event === 'checked_in') {
-      scanResult.value = { type: 'success', message: `Successfully checked in at ${response.data.arrived_at}` }
-      show('Checked in successfully', 'success')
-    } else if (response.data.event === 'checked_out') {
-      scanResult.value = { type: 'success', message: `Successfully checked out at ${response.data.left_at}` }
-      show('Checked out successfully', 'success')
+    if (response.data.status === 'checked_in') {
+      scanResult.value = { type: 'success', message: `Successfully checked in at ${new Date(response.data.arrived_at).toLocaleTimeString()}` }
+      show('Checked in successfully! ✓', 'success')
+    } else if (response.data.status === 'checked_out') {
+      scanResult.value = { type: 'success', message: `Successfully checked out at ${new Date(response.data.left_at).toLocaleTimeString()}` }
+      show('Checked out successfully! ✓', 'success')
     }
   } catch (error) {
     console.error('Scan error', error)
-    // Handle specific errors based on API response
-    if (error.response?.status === 409) {
+    if (error.message === 'Invalid QR code format.') {
+      scanResult.value = { type: 'error', message: 'This does not look like a valid QR code. Please scan the code on the instructor\'s screen.' }
+      show('Invalid QR format', 'error')
+    } else if (error.response?.status === 409) {
       scanResult.value = { type: 'warning', message: 'You have already checked out for this session.' }
       show('Already checked out', 'warning')
     } else if (error.response?.status === 422) {
-      scanResult.value = { type: 'error', message: 'QR code is invalid or expired. Please scan the latest code.' }
+      scanResult.value = { type: 'error', message: 'QR code is invalid or has expired. Ask your instructor to refresh it.' }
       show('Invalid or expired QR code', 'error')
     } else {
-      scanResult.value = { type: 'error', message: error.message || 'An unexpected error occurred.' }
+      scanResult.value = { type: 'error', message: error.response?.data?.message || error.message || 'An unexpected error occurred.' }
       show('Failed to process scan', 'error')
     }
   } finally {

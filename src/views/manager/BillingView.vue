@@ -5,14 +5,15 @@ import BillingTable from '@/components/billing/BillingTable.vue'
 import BillingDetail from '@/components/billing/BillingDetail.vue'
 import { useApi } from '@/composables/useApi'
 import api from '@/api/axios'
+import { useBillingStore } from '@/stores/billing'
 
-const { loading, error, data: billingRecords, execute } = useApi()
+const billingStore = useBillingStore()
 const { loading: detailLoading, error: detailError, data: selectedDetail, execute: executeDetail } = useApi()
 
 const selectedInstructorId = ref(null)
 
 async function loadBilling() {
-  await execute(() => api.get('/billing'))
+  await billingStore.fetchAll()
 }
 
 async function selectInstructor(id) {
@@ -41,8 +42,8 @@ onMounted(() => {
       <div class="lg:col-span-7">
         <h2 class="font-headline-sm text-headline-sm mb-4">Summary</h2>
         <BillingTable 
-          :billing="billingRecords || []" 
-          :loading="loading" 
+          :billing="billingStore.billingRecords || []" 
+          :loading="billingStore.loading" 
           :selected-id="selectedInstructorId"
           @select="selectInstructor"
         />

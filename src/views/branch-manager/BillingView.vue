@@ -67,7 +67,7 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody class="divide-y divide-neutral-200">
-              <tr v-for="record in billingStore.records" :key="record.id" class="hover:bg-neutral-50">
+              <tr v-for="record in billingStore.billingRecords" :key="record.id" class="hover:bg-neutral-50">
                 <td class="px-6 py-4 font-medium text-neutral-900">{{ record.student_name }}</td>
                 <td class="px-6 py-4">
                   <span 

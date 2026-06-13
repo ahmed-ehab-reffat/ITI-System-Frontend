@@ -10,28 +10,22 @@ export const useLedgerStore = defineStore('ledger', {
   }),
 
   getters: {
+
     statusColor: (state) => {
       if (state.balance === null) return 'neutral'
       return state.balance >= 150 ? 'green' : 'red'
     },
 
-    isAtRisk: (state) =>
-      state.balance !== null && state.balance < 150,
+    isAtRisk: (state) => state.balance !== null && state.balance < 150,
   },
 
   actions: {
-    /**
-     * GET /students/{id}/ledger
-     */
+
     async fetchForStudent(studentId) {
       this.loading = true
       this.error = null
-
       try {
-        const { data } = await api.get(
-          `/students/${studentId}/ledger`
-        )
-
+        const { data } = await api.get(`/students/${studentId}/ledger`)
         const payload = data.data ?? data
 
         this.balance = payload.balance
@@ -39,25 +33,16 @@ export const useLedgerStore = defineStore('ledger', {
 
         return payload
       } catch (err) {
-        this.error =
-          err?.response?.data?.message ||
-          'Failed to load attendance ledger.'
-
+        this.error = err.response?.data?.message || 'Failed to load attendance ledger.'
         throw err
       } finally {
         this.loading = false
       }
     },
 
-    /**
-     * Silent refresh
-     */
     async refresh(studentId) {
       try {
-        const { data } = await api.get(
-          `/students/${studentId}/ledger`
-        )
-
+        const { data } = await api.get(`/students/${studentId}/ledger`)
         const payload = data.data ?? data
 
         this.balance = payload.balance
@@ -65,18 +50,9 @@ export const useLedgerStore = defineStore('ledger', {
 
         return payload
       } catch (err) {
-        this.error =
-          err?.response?.data?.message ||
-          'Failed to refresh ledger.'
-
+        this.error = err.response?.data?.message || 'Failed to refresh ledger.'
         throw err
       }
-    },
-
-    clear() {
-      this.balance = null
-      this.history = []
-      this.error = null
     },
   },
 })

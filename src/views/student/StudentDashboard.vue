@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import AtRiskBanner from '@/components/student/AtRiskBanner.vue'
 import CourseGradeCard from '@/components/student/CourseGradeCard.vue'
 import StatCard from '@/components/shared/StatCard.vue'
+import AppIcon from '@/components/shared/AppIcon.vue'
 import { useApi } from '@/composables/useApi'
 import api from '@/api/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -38,7 +39,10 @@ onMounted(async () => {
     <div v-else-if="analytics">
       <AtRiskBanner 
         :balance="analytics.attendance_balance" 
-        :course-grades="analytics.course_grades" 
+        :course-grades="analytics.course_grades"
+        :is-at-risk="analytics.is_at_risk"
+        :at-risk-reason="analytics.at_risk_reason"
+        :attendance-trend="analytics.attendance_trend"
       />
 
       <div class="mb-8">
@@ -49,6 +53,31 @@ onMounted(async () => {
             :value="analytics.attendance_balance"
             icon="fact_check"
           />
+
+          <!-- Mini Attendance Trend -->
+          <div class="bg-surface border border-outline-variant rounded-xl p-6 flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-2">
+              <h3 class="font-headline-sm text-headline-sm text-on-surface">Recent Attendance</h3>
+              <AppIcon name="history" class="text-on-surface-variant" />
+            </div>
+            <div class="mt-auto">
+              <p class="text-xs text-on-surface-variant mb-2">Last {{ analytics.attendance_trend?.length || 0 }} sessions</p>
+              <div class="flex gap-2 items-center" v-if="analytics.attendance_trend && analytics.attendance_trend.length > 0">
+                <div 
+                  v-for="(trend, i) in analytics.attendance_trend" 
+                  :key="i"
+                  class="w-4 h-4 rounded-full border border-surface"
+                  :class="{
+                    'bg-green-500': trend.status === 'present',
+                    'bg-red-500': trend.status === 'absent',
+                    'bg-yellow-500': trend.status === 'excused'
+                  }"
+                  :title="`${trend.date}: ${trend.status}`"
+                ></div>
+              </div>
+              <div v-else class="text-sm text-on-surface-variant">No recent sessions</div>
+            </div>
+          </div>
         </div>
       </div>
 
