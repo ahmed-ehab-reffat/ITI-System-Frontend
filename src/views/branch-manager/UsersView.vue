@@ -54,16 +54,26 @@ function openEditModal(user) {
 
 async function handleSubmit() {
   try {
+    const payload = {
+      name: formData.value.name,
+      email: formData.value.email,
+      role: formData.value.role,
+    }
+    
+    if (formData.value.password) {
+      payload.password = formData.value.password
+    }
+
     if (modalMode.value === 'create') {
-      await usersStore.create(formData.value)
+      await usersStore.create(payload)
       toast.success('User created successfully')
     } else {
-      await usersStore.update(formData.value.id, formData.value)
+      await usersStore.update(formData.value.id, payload)
       toast.success('User updated successfully')
     }
     isModalOpen.value = false
   } catch (e) {
-    toast.error('Failed to save user')
+    toast.error(e.response?.data?.message || 'Failed to save user')
   }
 }
 
@@ -80,7 +90,7 @@ async function handleDeactivate(id) {
       await usersStore.deactivate(id)
       toast.success('User deactivated')
     } catch (e) {
-      toast.error('Failed to deactivate user')
+      toast.error(e.response?.data?.message || 'Failed to deactivate user')
     }
   }
 }

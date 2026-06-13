@@ -22,8 +22,9 @@ export const useUsersStore = defineStore('users', () => {
     errors.value = null
     try {
       const { data } = await api.post('/users', payload)
-      users.value.push(data)
-      return data
+      const user = data.data || data
+      users.value.push(user)
+      return user
     } catch (e) {
       errors.value = e.response?.data?.errors
       throw e
@@ -32,9 +33,10 @@ export const useUsersStore = defineStore('users', () => {
 
   async function update(id, payload) {
     const { data } = await api.put(`/users/${id}`, payload)
+    const user = data.data || data
     const i = users.value.findIndex(u => u.id === id)
-    if (i !== -1) users.value[i] = data
-    return data
+    if (i !== -1) users.value[i] = user
+    return user
   }
 
   async function deactivate(id) {
