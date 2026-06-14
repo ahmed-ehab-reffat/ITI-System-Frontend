@@ -53,7 +53,11 @@ function formatTime(value) {
 
 function formatDate(value) {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString([], { month: 'short', day: 'numeric' })
+  return new Date(value).toLocaleDateString([], {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
 }
 </script>
 
@@ -82,7 +86,7 @@ function formatDate(value) {
                 : 'text-neutral-800'
           "
         >
-          {{ ledgerStore.loading ? '—' : ledgerStore.balance }}
+          {{ ledgerStore.balance ?? 0 }}
         </span>
         <span class="text-sm text-neutral-400">/ 250 points</span>
       </div>
@@ -101,8 +105,8 @@ function formatDate(value) {
         empty-text="No attendance records yet."
       >
         <template #cell-date="{ row }">
-          {{ formatDate(row.date ?? row.session_date) }}
-        </template>
+  {{ formatDate(row.session?.session_date) }}
+</template>
         <template #cell-arrived_at="{ value }">
           {{ formatTime(value) }}
         </template>
