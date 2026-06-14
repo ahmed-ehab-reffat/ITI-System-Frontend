@@ -44,11 +44,7 @@ const sessionRows = computed(() => {
 
     return {
       session_id: session.id,
-      session_label:
-        session.title ||
-        session.course_name ||
-        session.engagement?.type ||
-        'Session',
+      session_label: session.title || session.course_name || session.engagement?.type || 'Session',
       session_date: session.session_date || session.date,
       submission,
       days_late: submission ? getDaysLate(session, submission) : 0,
@@ -92,9 +88,7 @@ onMounted(async () => {
     for (const engagement of engagementsStore.engagements) {
       const { data } = await api.get(`/engagements/${engagement.id}/sessions`)
       const list = data.data ?? data
-      sessions.push(
-        ...list.map((s) => ({ ...s, engagement }))
-      )
+      sessions.push(...list.map((s) => ({ ...s, engagement })))
     }
     cohortSessions.value = sessions
 
@@ -133,23 +127,16 @@ async function handleSubmit() {
 
   try {
     const payload =
-      submitTab.value === 'url'
-        ? { url: submitUrl.value.trim() }
-        : { file: submitFile.value }
+      submitTab.value === 'url' ? { url: submitUrl.value.trim() } : { file: submitFile.value }
 
-    await submissionsStore.submit(
-      selectedSession.value.session_id,
-      payload
-    )
+    await submissionsStore.submit(selectedSession.value.session_id, payload)
 
     await submissionsStore.fetchForStudent(authStore.user.id)
 
     toast.success('Submission saved successfully.')
     showSubmitModal.value = false
   } catch (err) {
-    toast.error(
-      err.response?.data?.message || 'Failed to submit work.'
-    )
+    toast.error(err.response?.data?.message || 'Failed to submit work.')
   } finally {
     submitting.value = false
   }
@@ -246,14 +233,22 @@ function formatDate(value) {
       <div class="flex border-b border-neutral-200 mb-4">
         <button
           class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          :class="submitTab === 'url' ? 'border-primary text-primary' : 'border-transparent text-neutral-500'"
+          :class="
+            submitTab === 'url'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-neutral-500'
+          "
           @click="submitTab = 'url'"
         >
           URL
         </button>
         <button
           class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          :class="submitTab === 'file' ? 'border-primary text-primary' : 'border-transparent text-neutral-500'"
+          :class="
+            submitTab === 'file'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-neutral-500'
+          "
           @click="submitTab = 'file'"
         >
           File Upload
@@ -261,9 +256,7 @@ function formatDate(value) {
       </div>
 
       <div v-if="submitTab === 'url'">
-        <label class="block text-sm font-medium text-neutral-700 mb-1">
-          Submission URL
-        </label>
+        <label class="block text-sm font-medium text-neutral-700 mb-1"> Submission URL </label>
         <input
           v-model="submitUrl"
           type="url"
@@ -274,24 +267,14 @@ function formatDate(value) {
 
       <div v-else>
         <label class="block text-sm font-medium text-neutral-700 mb-1">
-          Upload File (max 10 MB)
+          Upload File (max 1 MB)
         </label>
-        <input
-          type="file"
-          class="w-full text-sm"
-          @change="onFileChange"
-        />
+        <input type="file" class="w-full text-sm" @change="onFileChange" />
       </div>
 
       <template #footer>
         <Button variant="outline" @click="showSubmitModal = false">Cancel</Button>
-        <Button
-          variant="primary"
-          :loading="submitting"
-          @click="handleSubmit"
-        >
-          Submit
-        </Button>
+        <Button variant="primary" :loading="submitting" @click="handleSubmit"> Submit </Button>
       </template>
     </Modal>
   </MainLayout>
