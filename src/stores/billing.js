@@ -11,10 +11,20 @@ export const useBillingStore = defineStore('billing', () => {
     loading.value = true
     try {
       const { data } = await api.get('/billing')
-      // Handling both resource wrappers and direct arrays
-      // Backend returns a plain array directly — data.data ?? data handles both wrapped and unwrapped
-      billingRecords.value = Array.isArray(data) ? data : (data.records || data.data || [])
-      summary.value = data.summary || null
+      const records = Array.isArray(data) ? data : (data.records || data.data || [])
+      billingRecords.value = records
+
+      const internal = records.filter(r => r.type === 'internal')
+      const external = records.filter(r => r.type === 'external')
+
+      summary.value = {
+        total_due: records.reduce((sum, r) => sum + (Number(r.total_due) || 0), 0),
+        internal_count: internal.length,
+        internal_due: internal.reduce((sum, r) => sum + (Number(r.total_due) || 0), 0),
+        external_count: external.length,
+        external_due: external.reduce((sum, r) => sum + (Number(r.total_due) || 0), 0),
+      }
+      
       return data
     } finally {
       loading.value = false

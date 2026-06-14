@@ -8,9 +8,9 @@ const { state, handleConfirm, handleCancel } = useConfirm()
 
 <template>
   <AppModal
-    :show="state.isOpen"
+    :modelValue="state.isOpen"
     :title="state.title"
-    @close="handleCancel"
+    @update:modelValue="(val) => { if (!val) handleCancel() }"
   >
     <div class="space-y-4">
       <p class="text-neutral-600">
