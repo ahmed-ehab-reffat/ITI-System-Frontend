@@ -12,11 +12,11 @@ export function useApi() {
     error.value = null
     try {
       const response = await apiCall()
-      data.value = response.data
+      data.value = response?.data !== undefined ? response.data : response
       if (options.showSuccess) {
         show(options.successMsg, 'success')
       }
-      return response.data
+      return data.value
     } catch (e) {
       error.value = e.response?.data?.message || 'An unexpected error occurred.'
       show(error.value, 'error')
