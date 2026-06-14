@@ -2,14 +2,15 @@
 import { ref, onMounted } from 'vue'
 import { useTracksStore } from '@/stores/tracks'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
 import AppButton from '@/components/ui/Button.vue'
 import AppInput from '@/components/ui/Input.vue'
 import AppModal from '@/components/ui/Modal.vue'
 import AppSpinner from '@/components/ui/Spinner.vue'
-import Pagination from '@/components/ui/Pagination.vue'
 
 const tracksStore = useTracksStore()
 const toast = useToast()
+const confirm = useConfirm()
 
 const isModalOpen = ref(false)
 const modalMode = ref('create')
@@ -51,12 +52,19 @@ async function handleSubmit() {
 }
 
 async function handleDelete(track) {
-  if (!confirm(`Are you sure you want to delete the track "${track.name}"?`)) return
-  try {
-    await tracksStore.destroy(track.id)
-    toast.success('Track deleted successfully')
-  } catch (e) {
-    toast.error(e.response?.data?.message || 'Failed to delete track')
+  const confirmed = await confirm.confirm({
+    title: 'Delete Track?',
+    message: `Are you sure you want to delete "${track.name}"? This cannot be undone.`,
+    confirmText: 'Delete',
+    variant: 'danger',
+  })
+  if (confirmed) {
+    try {
+      await tracksStore.destroy(track.id)
+      toast.success('Track deleted successfully')
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Failed to delete track')
+    }
   }
 }
 </script>
