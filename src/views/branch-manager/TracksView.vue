@@ -63,7 +63,12 @@ async function handleDelete(track) {
       await tracksStore.destroy(track.id)
       toast.success('Track deleted successfully')
     } catch (e) {
-      toast.error(e.response?.data?.message || 'Failed to delete track')
+      const msg = e.response?.data?.message || ''
+      if (msg.includes('foreign key') || msg.includes('SQLSTATE')) {
+        toast.error('Cannot delete this track because it has cohorts associated with it. Remove allcohorts from this track first.')
+      } else {
+        toast.error(msg || 'Failed to delete track')
+      }
     }
   }
 }
