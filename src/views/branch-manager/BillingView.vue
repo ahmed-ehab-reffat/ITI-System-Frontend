@@ -1,9 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useBillingStore } from '@/stores/billing'
-import StatCard from '@/components/shared/StatCard.vue'
 import AppSpinner from '@/components/ui/Spinner.vue'
-import AppBadge from '@/components/ui/Badge.vue'
 
 const billingStore = useBillingStore()
 

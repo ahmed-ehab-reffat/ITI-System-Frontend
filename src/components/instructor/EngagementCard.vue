@@ -40,8 +40,17 @@ function goToQr() {
         This is a cohort-wide lecture. Attendance and delivered hours ({{ engagement.delivered_hours }} hrs) are tracked, but lab submissions/grading are managed under lab groups.
       </p>
     </div>
+
+    <!-- Business Session Info Placeholder -->
+    <div v-else-if="engagement.type === 'business_session'" class="flex-1 flex flex-col justify-center items-center text-center p-6 border border-dashed border-outline-variant rounded-xl mb-6 bg-surface-container-lowest">
+      <AppIcon name="business_center" :size="32" class="text-[#345968] mb-2" />
+      <span class="text-xs font-semibold text-on-surface uppercase tracking-wider">Business Session</span>
+      <p class="text-[11px] text-on-surface-variant mt-2 max-w-[200px]">
+        This is a business or professional session. Attendance and delivered hours ({{ engagement.delivered_hours }} hrs) are tracked, but lab grading does not apply.
+      </p>
+    </div>
     
-    <template v-else>
+    <template v-else-if="engagement.type === 'lab'">
       <div class="grid grid-cols-3 gap-2 mb-6">
         <div class="bg-surface-container-lowest p-2 rounded border border-surface-container-high text-center">
           <div class="text-[10px] text-on-surface-variant mb-1 uppercase tracking-wider">Students</div>

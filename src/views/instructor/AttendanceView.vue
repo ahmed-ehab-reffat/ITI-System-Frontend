@@ -99,17 +99,10 @@ function formatTime(value) {
   return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-async function handleAddRecord({ student_id, status }) {
+async function handleAddRecord(payload) {
   savingRecord.value = true
   try {
-    await attendanceStore.recordAttendance(selectedSessionId.value, {
-  records: [
-    {
-      student_id,
-      status,
-    },
-  ],
-})
+    await attendanceStore.recordAttendance(selectedSessionId.value, payload)
     toast.success('Attendance record saved.')
     showRecordModal.value = false
   } catch (err) {
@@ -184,7 +177,7 @@ async function markDelivered() {
     >
     <template #cell-student="{ row }">
   {{ row.student?.name ?? '—' }}
-</template>s
+</template>
       <template #cell-arrived_at="{ value }">
         {{ formatTime(value) }}
       </template>

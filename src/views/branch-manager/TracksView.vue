@@ -6,6 +6,7 @@ import AppButton from '@/components/ui/Button.vue'
 import AppInput from '@/components/ui/Input.vue'
 import AppModal from '@/components/ui/Modal.vue'
 import AppSpinner from '@/components/ui/Spinner.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const tracksStore = useTracksStore()
 const toast = useToast()
@@ -44,8 +45,18 @@ async function handleSubmit() {
       toast.success('Track updated successfully')
     }
     isModalOpen.value = false
-  } catch (e) {
+  } catch {
     toast.error('Failed to save track')
+  }
+}
+
+async function handleDelete(track) {
+  if (!confirm(`Are you sure you want to delete the track "${track.name}"?`)) return
+  try {
+    await tracksStore.destroy(track.id)
+    toast.success('Track deleted successfully')
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Failed to delete track')
   }
 }
 </script>
@@ -76,12 +87,26 @@ async function handleSubmit() {
               <code class="px-2 py-1 bg-neutral-100 rounded text-neutral-600 font-mono">{{ track.code }}</code>
             </td>
             <td class="px-6 py-4 text-right">
-              <button @click="openEditModal(track)" class="text-secondary-600 hover:text-secondary-700 font-medium">Edit</button>
+              <div class="flex justify-end gap-3">
+                <button @click="openEditModal(track)" class="text-secondary-600 hover:text-secondary-700 font-medium">Edit</button>
+                <button @click="handleDelete(track)" class="text-red-600 hover:text-red-700 font-medium">Delete</button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <Pagination
+      v-if="tracksStore.pagination.lastPage > 1"
+      :current-page="tracksStore.pagination.currentPage"
+      :last-page="tracksStore.pagination.lastPage"
+      :total="tracksStore.pagination.total"
+      :from="tracksStore.pagination.from"
+      :to="tracksStore.pagination.to"
+      :loading="tracksStore.loading"
+      @change-page="tracksStore.fetchAll"
+    />
 
     <!-- Modal -->
     <AppModal

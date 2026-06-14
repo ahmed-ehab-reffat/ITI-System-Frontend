@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
 import AppIcon from '@/components/shared/AppIcon.vue'
-import StatusBadge from '@/components/shared/StatusBadge.vue'
 import { useToast } from '@/composables/useToast'
 import { useApi } from '@/composables/useApi'
 import { useEngagementsStore } from '@/stores/engagements'

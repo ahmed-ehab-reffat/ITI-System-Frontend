@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import AppIcon from '@/components/shared/AppIcon.vue'
 import { useToast } from '@/composables/useToast'
 import { useApi } from '@/composables/useApi'

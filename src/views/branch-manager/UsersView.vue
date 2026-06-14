@@ -5,9 +5,9 @@ import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import AppButton from '@/components/ui/Button.vue'
 import AppInput from '@/components/ui/Input.vue'
-import AppTable from '@/components/ui/Table.vue'
 import AppModal from '@/components/ui/Modal.vue'
 import AppSpinner from '@/components/ui/Spinner.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const usersStore = useUsersStore()
 const toast = useToast()
@@ -35,13 +35,27 @@ const tabs = [
 ]
 
 onMounted(() => {
-  usersStore.fetchAll()
+  handleTabChange('all')
 })
 
-const filteredUsers = computed(() => {
-  if (activeTab.value === 'all') return usersStore.users
-  return usersStore.users.filter(u => u.role === activeTab.value)
-})
+const filteredUsers = computed(() => usersStore.users)
+
+async function handleTabChange(tabId) {
+  activeTab.value = tabId
+  const params = { page: 1 }
+  if (tabId !== 'all') {
+    params.role = tabId
+  }
+  await usersStore.fetchAll(params)
+}
+
+async function changePage(page) {
+  const params = { page }
+  if (activeTab.value !== 'all') {
+    params.role = activeTab.value
+  }
+  await usersStore.fetchAll(params)
+}
 
 function isDeactivated(user) {
   return user.expires_at != null && new Date(user.expires_at) <= new Date()
@@ -143,7 +157,7 @@ async function handleDeactivate(id) {
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          @click="activeTab = tab.id"
+          @click="handleTabChange(tab.id)"
           class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors"
           :class="[
             activeTab === tab.id
@@ -191,6 +205,17 @@ async function handleDeactivate(id) {
         </tbody>
       </table>
     </div>
+
+    <Pagination
+      v-if="usersStore.pagination.lastPage > 1"
+      :current-page="usersStore.pagination.currentPage"
+      :last-page="usersStore.pagination.lastPage"
+      :total="usersStore.pagination.total"
+      :from="usersStore.pagination.from"
+      :to="usersStore.pagination.to"
+      :loading="usersStore.loading"
+      @change-page="changePage"
+    />
 
     <!-- Modal -->
     <AppModal

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import AppIcon from '@/components/shared/AppIcon.vue'
 import StudentDetailPanel from '@/components/track-admin/StudentDetailPanel.vue'
 import { useApi } from '@/composables/useApi'
 import { useCohortsStore } from '@/stores/cohorts'

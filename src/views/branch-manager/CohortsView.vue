@@ -9,6 +9,7 @@ import AppButton from '@/components/ui/Button.vue'
 import AppInput from '@/components/ui/Input.vue'
 import AppModal from '@/components/ui/Modal.vue'
 import AppSpinner from '@/components/ui/Spinner.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const cohortsStore = useCohortsStore()
 const tracksStore = useTracksStore()
@@ -123,6 +124,10 @@ async function handleDelete(cohort) {
     }
   }
 }
+
+async function changePage(page) {
+  await cohortsStore.fetchAll({ page })
+}
 </script>
 
 <template>
@@ -191,6 +196,17 @@ async function handleDelete(cohort) {
         </div>
       </div>
     </div>
+
+    <Pagination
+      v-if="cohortsStore.pagination.lastPage > 1"
+      :current-page="cohortsStore.pagination.currentPage"
+      :last-page="cohortsStore.pagination.lastPage"
+      :total="cohortsStore.pagination.total"
+      :from="cohortsStore.pagination.from"
+      :to="cohortsStore.pagination.to"
+      :loading="cohortsStore.loading"
+      @change-page="changePage"
+    />
 
     <!-- Create / Edit Modal -->
     <AppModal

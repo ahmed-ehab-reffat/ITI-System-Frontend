@@ -6,15 +6,32 @@ export const useAnnouncementsStore = defineStore('announcements', () => {
   const announcements = ref([])
   const loading = ref(false)
 
+  const pagination = ref({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    from: 0,
+    to: 0,
+  })
+
   /**
    * GET /cohorts/{cohortId}/announcements
    */
-  async function fetchForCohort(cohortId) {
+  async function fetchForCohort(cohortId, page = 1) {
     loading.value = true
     try {
-      const { data } = await api.get(`/cohorts/${cohortId}/announcements`)
+      const { data } = await api.get(`/cohorts/${cohortId}/announcements`, { params: { page } })
       // Handle both wrapped { data: [...] } and plain [...] responses
       announcements.value = data.data ?? data
+      if (data.meta) {
+        pagination.value = {
+          currentPage: data.meta.current_page,
+          lastPage: data.meta.last_page,
+          total: data.meta.total,
+          from: data.meta.from,
+          to: data.meta.to,
+        }
+      }
     } finally {
       loading.value = false
     }
@@ -71,6 +88,7 @@ export const useAnnouncementsStore = defineStore('announcements', () => {
   return {
     announcements,
     loading,
+    pagination,
     fetchForCohort,
     create,
     update,

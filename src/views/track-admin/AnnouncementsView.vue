@@ -8,6 +8,7 @@ import { useToast } from '@/composables/useToast'
 import { useApi } from '@/composables/useApi'
 import { useCohortsStore } from '@/stores/cohorts'
 import { useAnnouncementsStore } from '@/stores/announcements'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const cohortsStore = useCohortsStore()
 const announcementsStore = useAnnouncementsStore()
@@ -26,17 +27,17 @@ const { loading: announcementsLoading, execute: executeFetchAnnouncements } = us
 const { loading: actionLoading, execute: executeAction } = useApi()
 
 // Load announcements when cohort changes
-async function loadAnnouncements(cohortId) {
+async function loadAnnouncements(cohortId, page = 1) {
   if (!cohortId) return
   await executeFetchAnnouncements(async () => {
-    const result = await announcementsStore.fetchForCohort(cohortId)
+    const result = await announcementsStore.fetchForCohort(cohortId, page)
     return { data: result }
   })
 }
 
 watch(selectedCohortId, (newId) => {
   if (newId) {
-    loadAnnouncements(newId)
+    loadAnnouncements(newId, 1)
     resetForm()
   }
 })
@@ -59,7 +60,7 @@ async function handleSaveAnnouncement({ title, body }) {
     let result
     
     if (editingAnnouncementId.value) {
-      result = await announcementsStore.update(selectedCohortId.value, editingAnnouncementId.value, payload)
+      result = await announcementsStore.update(editingAnnouncementId.value, payload)
       showToast('Announcement updated successfully!', 'success')
     } else {
       result = await announcementsStore.create(selectedCohortId.value, payload)
@@ -82,7 +83,7 @@ async function handleDelete(announcementId) {
   if (!confirm('Are you sure you want to delete this announcement?')) return
   
   await executeAction(async () => {
-    const result = await announcementsStore.destroy(selectedCohortId.value, announcementId)
+    const result = await announcementsStore.destroy(announcementId)
     showToast('Announcement deleted successfully!', 'success')
     return { data: result }
   })
@@ -93,6 +94,12 @@ function resetForm() {
   formBody.value = ''
   editingAnnouncementId.value = null
   showForm.value = false
+}
+
+async function changePage(page) {
+  if (selectedCohortId.value) {
+    await loadAnnouncements(selectedCohortId.value, page)
+  }
 }
 </script>
 
@@ -164,6 +171,17 @@ function resetForm() {
             :announcement="ann"
             @edit="startEdit"
             @delete="handleDelete"
+          />
+
+          <Pagination
+            v-if="announcementsStore.pagination.lastPage > 1"
+            :current-page="announcementsStore.pagination.currentPage"
+            :last-page="announcementsStore.pagination.lastPage"
+            :total="announcementsStore.pagination.total"
+            :from="announcementsStore.pagination.from"
+            :to="announcementsStore.pagination.to"
+            :loading="announcementsLoading"
+            @change-page="changePage"
           />
         </div>
       </div>

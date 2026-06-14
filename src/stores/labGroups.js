@@ -33,7 +33,7 @@ export const useLabGroupsStore = defineStore('labGroups', () => {
   async function assignStudents(cohortId, labGroupId, studentIds) {
     loading.value = true
     try {
-      const { data } = await api.post(`/cohorts/${cohortId}/lab-groups/${labGroupId}/students`, {
+      const { data } = await api.post(`/lab-groups/${labGroupId}/students`, {
         student_ids: studentIds
       })
       // Refresh lab groups after assignment
@@ -47,8 +47,8 @@ export const useLabGroupsStore = defineStore('labGroups', () => {
   async function removeStudent(cohortId, labGroupId, studentId) {
     loading.value = true
     try {
-      const { data } = await api.delete(`/cohorts/${cohortId}/lab-groups/${labGroupId}/students/${studentId}`)
-      
+      const { data } = await api.delete(`/lab-groups/${labGroupId}/students/${studentId}`)
+
       // Local update to avoid full reload
       const group = labGroups.value.find(g => g.id === labGroupId)
       if (group && group.students) {

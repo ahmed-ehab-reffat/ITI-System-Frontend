@@ -7,11 +7,28 @@ export const useUsersStore = defineStore('users', () => {
   const loading = ref(false)
   const errors = ref(null)
 
+  const pagination = ref({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    from: 0,
+    to: 0,
+  })
+
   async function fetchAll(params = {}) {
     loading.value = true
     try {
       const { data } = await api.get('/users', { params })
       users.value = data.data
+      if (data.meta) {
+        pagination.value = {
+          currentPage: data.meta.current_page,
+          lastPage: data.meta.last_page,
+          total: data.meta.total,
+          from: data.meta.from,
+          to: data.meta.to,
+        }
+      }
       return data.data
     } finally {
       loading.value = false
@@ -57,5 +74,5 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
-  return { users, loading, errors, fetchAll, create, update, deactivate }
+  return { users, loading, errors, pagination, fetchAll, create, update, deactivate }
 })
