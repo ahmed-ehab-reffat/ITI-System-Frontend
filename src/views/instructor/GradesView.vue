@@ -169,6 +169,14 @@ function formatScore(value) {
   if (value === null || value === undefined) return '—'
   return Number(value).toFixed(2)
 }
+
+function getS3Url(filePath) {
+  const bucketName = 'iti-system-s3-bucket'
+  const region = 'eu-central-1'
+  // filePath from the backend may already include 'submissions/' prefix or just the filename
+  const key = filePath.startsWith('submissions/') ? filePath : `submissions/${filePath}`
+  return `https://${bucketName}.s3.${region}.amazonaws.com/${key}`
+}
 </script>
 
 <template>
@@ -253,49 +261,107 @@ function formatScore(value) {
               <div
                 v-for="submission in student.submissions"
                 :key="submission.id"
-                class="flex flex-wrap items-center gap-3 p-3 bg-surface-container-low rounded-lg border border-outline-variant"
+                class="p-3 bg-surface-container-low rounded-lg border border-outline-variant space-y-3"
               >
-                <div class="flex-1 min-w-[200px]">
-                  <span class="text-sm font-medium">Lab Submission</span>
-                  <p class="text-xs text-on-surface-variant mt-0.5">
-                    Submitted:
-                    {{
-                      submission.submitted_at
-                        ? new Date(submission.submitted_at).toLocaleString()
-                        : '—'
-                    }}
-                  </p>
-                  <p
-                    v-if="submission.final_score !== null"
-                    class="text-sm font-semibold text-primary mt-1"
-                  >
-                    Final score: {{ formatScore(submission.final_score) }}
-                    <span
-                      v-if="submission.late_penalty > 0"
-                      class="text-xs font-normal text-yellow-700 ml-1"
+                <!-- Top row: meta + score input -->
+                <div class="flex flex-wrap items-center gap-3">
+                  <div class="flex-1 min-w-[200px]">
+                    <span class="text-sm font-medium">Lab Submission</span>
+                    <p class="text-xs text-on-surface-variant mt-0.5">
+                      Submitted:
+                      {{
+                        submission.submitted_at
+                          ? new Date(submission.submitted_at).toLocaleString()
+                          : '—'
+                      }}
+                    </p>
+                    <p
+                      v-if="submission.final_score !== null"
+                      class="text-sm font-semibold text-primary mt-1"
                     >
-                      (late penalty: -{{ submission.late_penalty }})
-                    </span>
-                  </p>
+                      Final score: {{ formatScore(submission.final_score) }}
+                      <span
+                        v-if="submission.late_penalty > 0"
+                        class="text-xs font-normal text-yellow-700 ml-1"
+                      >
+                        (late penalty: -{{ submission.late_penalty }})
+                      </span>
+                    </p>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="scoreInputs[submission.id]"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Raw score"
+                      class="w-28 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                    />
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      :loading="savingId === submission.id"
+                      @click="saveGrade(submission)"
+                    >
+                      Save
+                    </Button>
+                  </div>
                 </div>
 
-                <div class="flex items-center gap-2">
-                  <input
-                    v-model="scoreInputs[submission.id]"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="Raw score"
-                    class="w-28 rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                  />
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    :loading="savingId === submission.id"
-                    @click="saveGrade(submission)"
-                  >
-                    Save
-                  </Button>
+                <!-- Submission content: PDF or URL -->
+                <div v-if="submission.file_path || submission.url" class="border-t border-outline-variant pt-3">
+                  <!-- PDF file -->
+                  <template v-if="submission.file_path">
+                    <p class="text-xs text-on-surface-variant mb-2 flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 17h8v-1H8v1zm0-3h8v-1H8v1zm0-3h4v-1H8v1z"/>
+                      </svg>
+                      PDF Submission
+                    </p>
+                    <!-- Inline PDF viewer (full width) -->
+                    <iframe
+                      :src="getS3Url(submission.file_path)"
+                      class="w-full rounded-md border border-outline-variant"
+                      style="height: 500px;"
+                      title="Student PDF Submission"
+                    />
+                    <!-- Open in new tab button -->
+                    <a
+                      :href="getS3Url(submission.file_path)"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-2 inline-flex items-center gap-1 text-xs text-primary underline hover:no-underline"
+                    >
+                      Open PDF in new tab
+                    </a>
+                  </template>
+
+                  <!-- URL link -->
+                  <template v-else-if="submission.url">
+                    <p class="text-xs text-on-surface-variant mb-1 flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                      </svg>
+                      Link Submission
+                    </p>
+                    <a
+                      :href="submission.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="inline-flex items-center gap-2 rounded-md border border-blue-300 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:bg-blue-100 transition-colors break-all"
+                    >
+                      {{ submission.url }}
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                      </svg>
+                    </a>
+                  </template>
+                </div>
+
+                <!-- No submission content -->
+                <div v-else class="border-t border-outline-variant pt-3">
+                  <p class="text-xs text-on-surface-variant italic">No file or link attached to this submission.</p>
                 </div>
               </div>
             </div>
