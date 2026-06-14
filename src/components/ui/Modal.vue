@@ -4,7 +4,11 @@ import { watch, computed } from 'vue'
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true,
+    default: undefined,
+  },
+  show: {
+    type: Boolean,
+    default: undefined,
   },
   title: {
     type: String,
@@ -20,11 +24,17 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'close'])
 
-const show = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val),
+const isOpen = computed({
+  get: () => props.modelValue ?? props.show,
+  set: (val) => {
+    if (props.modelValue !== undefined) {
+      emit('update:modelValue', val)
+    } else {
+      emit('close')
+    }
+  },
 })
 
 const sizes = {
@@ -35,14 +45,14 @@ const sizes = {
 }
 
 function close() {
-  show.value = false
+  isOpen.value = false
 }
 
 function onBackdropClick() {
   if (props.closeOnBackdrop) close()
 }
 
-watch(show, (open) => {
+watch(isOpen, (open) => {
   document.body.style.overflow = open ? 'hidden' : ''
 })
 </script>
@@ -51,7 +61,7 @@ watch(show, (open) => {
   <Teleport to="body">
     <Transition name="modal-fade">
       <div
-        v-if="show"
+        v-if="isOpen"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         @click.self="onBackdropClick"
       >
