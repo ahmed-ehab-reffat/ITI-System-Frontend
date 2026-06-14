@@ -135,7 +135,7 @@ const routes = [
     component: () => import('@/views/branch-manager/BillingView.vue'),
     meta: { requiresAuth: true, role: 'branch_manager' },
   },
-
+// Attendance & Excuses
   {
   path: '/student/attendance',
   name: 'student-attendance',
@@ -153,6 +153,25 @@ const routes = [
     meta: { requiresAuth: true, role: 'student' },
 
 },
+{
+  path: '/admin/attendance',
+  name: 'admin-attendance',
+  component: () => import('@/views/track-admin/AttendanceView.vue'),
+  meta: { requiresAuth: true, role: 'track_admin' },
+},
+{
+  path: '/admin/excuses',
+  name: 'admin-excuses',
+  component: () => import('@/views/track-admin/ExcuseRequestsView.vue'),
+  meta: { requiresAuth: true, role: 'track_admin' },
+},
+{
+  path: '/instructor/attendance',
+  name: 'instructor-attendance',
+  component: () => import('@/views/instructor/AttendanceView.vue'),
+  meta: { requiresAuth: true, role: 'instructor' },
+},
+
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

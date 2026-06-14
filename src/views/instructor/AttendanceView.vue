@@ -23,7 +23,7 @@ const savingRecord = ref(false)
 const delivering = ref(false)
 
 const columns = [
-  { key: 'student_name', label: 'Student' },
+  { key: 'student', label: 'Student' },
   { key: 'arrived_at', label: 'Arrived At' },
   { key: 'left_at', label: 'Left At' },
   { key: 'status', label: 'Status' },
@@ -33,9 +33,10 @@ const selectedSession = computed(() =>
   sessionsStore.sessions.find((s) => s.id === selectedSessionId.value)
 )
 
-const isDelivered = computed(() => !!selectedSession.value?.delivered_at)
+const isDelivered = computed(() => !!selectedSession.value?.is_delivered)
 
 onMounted(async () => {
+  // UserResource sets cohort_id from the instructor's first engagement.
   const cohortId = user.value?.cohort_id
   if (!cohortId) {
     toast.error('No cohort assigned to your account.')
@@ -43,11 +44,9 @@ onMounted(async () => {
   }
 
   try {
-    
-    await sessionsStore.fetchForCohort(cohortId)
-    sessionsStore.sessions = sessionsStore.sessions.filter(
-      (s) => s.instructor_id === user.value.id
-    )
+    // Server-side filter to only this instructor's engagements
+    // (avoids 403s from SessionPolicy on engagements that aren't theirs).
+    await sessionsStore.fetchForCohort(cohortId, { instructorId: user.value.id })
 
     if (sessionsStore.sessions.length > 0) {
       selectedSessionId.value = sessionsStore.sessions[0].id
@@ -72,6 +71,29 @@ async function loadAttendance() {
   }
 }
 
+/**
+ * Human-readable label for a session's engagement, e.g.
+ * "Lecture", "Lab — Group A", "Business Session".
+ */
+function engagementLabel(engagement) {
+  if (!engagement) return 'Session'
+  switch (engagement.type) {
+    case 'lecture':
+      return 'Lecture'
+    case 'business_session':
+      return 'Business Session'
+    case 'lab':
+      return `Lab — ${engagement.lab_group?.name ?? 'Group'}`
+    default:
+      return engagement.type
+  }
+}
+
+function formatDate(value) {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 function formatTime(value) {
   if (!value) return '—'
   return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -80,7 +102,14 @@ function formatTime(value) {
 async function handleAddRecord({ student_id, status }) {
   savingRecord.value = true
   try {
-    await attendanceStore.recordAttendance(selectedSessionId.value, { student_id, status })
+    await attendanceStore.recordAttendance(selectedSessionId.value, {
+  records: [
+    {
+      student_id,
+      status,
+    },
+  ],
+})
     toast.success('Attendance record saved.')
     showRecordModal.value = false
   } catch (err) {
@@ -96,7 +125,7 @@ async function markDelivered() {
     await sessionsStore.deliver(selectedSessionId.value)
     toast.success('Session marked as delivered.')
   } catch (err) {
-    toast.error(err.response?.data?.message || 'Failed to mark session as delivered.')
+    toast.error(err.response?.data?.message || sessionsStore.error || 'Failed to mark session as delivered.')
   } finally {
     delivering.value = false
   }
@@ -118,8 +147,8 @@ async function markDelivered() {
             No sessions assigned
           </option>
           <option v-for="session in sessionsStore.sessions" :key="session.id" :value="session.id">
-            {{ session.title || session.course_name }} — {{ session.date }}
-            <template v-if="session.delivered_at"> (Delivered)</template>
+            {{ engagementLabel(session.engagement) }} — {{ formatDate(session.session_date) }}
+            <template v-if="session.is_delivered"> (Delivered)</template>
           </option>
         </select>
       </div>
@@ -153,6 +182,9 @@ async function markDelivered() {
       row-key="student_id"
       empty-text="No attendance records yet for this session."
     >
+    <template #cell-student="{ row }">
+  {{ row.student?.name ?? '—' }}
+</template>s
       <template #cell-arrived_at="{ value }">
         {{ formatTime(value) }}
       </template>
