@@ -68,7 +68,10 @@ export const useUsersStore = defineStore('users', () => {
     loading.value = true
     try {
       await api.delete(`/users/${id}`)
-      users.value = users.value.filter(u => u.id !== id)
+      const user = users.value.find(u => u.id === id)
+      if (user) {
+        user.expires_at = new Date().toISOString()
+      }
     } finally {
       loading.value = false
     }
