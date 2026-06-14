@@ -42,6 +42,7 @@ export const useAttendanceStore = defineStore('attendance', {
     async recordAttendance(sessionId, payload) {
       this.error = null
       try {
+        console.log('ATTENDANCE PAYLOAD:', payload)
         const { data } = await api.post(`/sessions/${sessionId}/attendance`, payload)
         const record = data.data ?? data
 

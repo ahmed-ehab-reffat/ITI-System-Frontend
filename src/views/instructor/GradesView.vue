@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Button from '@/components/ui/Button.vue'
 import TagManager from '@/components/shared/TagManager.vue'
@@ -9,6 +10,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useToast } from '@/composables/useToast'
 import api from '@/api/axios'
 
+const route = useRoute()
 const submissionsStore = useSubmissionsStore()
 const engagementsStore = useEngagementsStore()
 const { user } = useAuth()
@@ -56,14 +58,27 @@ const hasLabGroup = computed(() => !!myLabEngagement.value)
 const hasLabSessions = computed(() => labSessions.value.length > 0)
 
 onMounted(async () => {
-  const cohortId = user.value?.cohort_id
-
-  if (!cohortId) {
-    toast.error('No cohort assigned to your account.')
-    return
-  }
-
   try {
+    // Instructors don't have a cohort_id on their user record.
+    // We derive it from their first engagement via the analytics endpoint.
+    const { data: analyticsData } = await api.get('/analytics/instructor')
+    const firstEngagement = Array.isArray(analyticsData) ? analyticsData[0] : null
+
+    if (!firstEngagement) {
+      // No engagements — hasLabGroup will be false, UI will show the empty state
+      return
+    }
+
+    // Now fetch engagements using the cohort_id embedded in the engagement resource.
+    // The engagement resource includes cohort_id from the DB via EngagementResource.
+    const { data: engRes } = await api.get(`/engagements/${firstEngagement.engagement_id}`)
+    const cohortId = engRes.data?.cohort_id ?? engRes.cohort_id
+
+    if (!cohortId) {
+      toast.error('Could not determine your cohort.')
+      return
+    }
+
     await engagementsStore.fetchForCohort(cohortId)
 
     if (!myLabEngagement.value) {
@@ -82,9 +97,14 @@ onMounted(async () => {
 })
 
 async function loadLabSessions() {
-  const myEngagements = engagementsStore.engagements.filter(
-    (e) => e.instructor_id === user.value?.id && e.type === 'lab'
-  )
+  const targetEngagementId = route.query.engagement || null
+
+  const myEngagements = engagementsStore.engagements.filter((e) => {
+    const isMyLab = e.instructor_id === user.value?.id && e.type === 'lab'
+    // If we came from a specific card, only show sessions for that engagement
+    if (targetEngagementId) return isMyLab && e.id === targetEngagementId
+    return isMyLab
+  })
 
   const sessions = []
 
