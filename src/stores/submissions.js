@@ -78,7 +78,13 @@ export const useSubmissionsStore = defineStore('submissions', {
 
         const { data } = await api.post(
           `/sessions/${sessionId}/submissions`,
-          formData
+          formData,
+          {
+            headers: {
+              // by default, axios will set the content type to application/json
+              'Content-Type': undefined
+            }
+          }
         )
 
         const created = data.data ?? data
