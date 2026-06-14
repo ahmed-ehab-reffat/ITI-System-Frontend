@@ -71,7 +71,7 @@ onMounted(() => {
     <div v-if="loading && !tags" class="text-xs text-on-surface-variant">Loading tags...</div>
     
     <div v-else class="flex flex-wrap items-center gap-2">
-      <div v-for="tag in tags" :key="tag.id" class="group flex items-center relative">
+      <div v-for="tag in (tags?.data || tags)" :key="tag.id" class="group flex items-center relative">
         <StudentTagBadge :tag="tag" />
         <button 
           v-if="canManage"
