@@ -28,6 +28,8 @@ const navLinks = computed(() => {
       { name: 'Setup',         icon: 'settings',        to: '/admin/setup' },
       { name: 'Students',      icon: 'group',           to: '/admin/students' },
       { name: 'Grades',        icon: 'grade',           to: '/admin/grades' },
+      { name: 'Attendance',    icon: 'fact_check',      to: '/admin/attendance' },
+     { name: 'Excuses',       icon: 'rule',            to: '/admin/excuses' },
       { name: 'Announcements', icon: 'campaign',        to: '/admin/announcements' },
     ]
   }
@@ -35,8 +37,9 @@ const navLinks = computed(() => {
   if (role === 'instructor') {
     return [
       { name: 'Dashboard',     icon: 'dashboard',   to: '/instructor/dashboard' },
-      { name: 'Attendance',    icon: 'fact_check',  to: '/instructor/qr/select' },
       { name: 'Grades',        icon: 'grade',       to: '/instructor/grades' },
+      { name: 'Attendance',    icon: 'fact_check',  to: '/instructor/attendance' },
+     { name: 'QR Attendence',    icon: 'qr_code_scanner',  to: '/instructor/qr/select' },
       { name: 'Announcements', icon: 'campaign',    to: '/announcements' },
     ]
   }

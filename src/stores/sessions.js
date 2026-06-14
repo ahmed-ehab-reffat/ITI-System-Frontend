@@ -9,14 +9,31 @@ export const useSessionsStore = defineStore('sessions', {
   }),
 
   actions: {
-    async fetchForCohort(cohortId, params = {}) {
+    /**
+     * @param {string} cohortId
+     * @param {{ instructorId?: string }} options
+     */
+    async fetchForCohort(cohortId, { instructorId = null } = {}) {
       this.loading = true
       this.error = null
       try {
-        const { data } = await api.get('/sessions', {
-          params: { cohort_id: cohortId, ...params },
-        })
-        this.sessions = data.data ?? data
+        const params = instructorId ? { instructor_id: instructorId } : {}
+        const { data: engRes } = await api.get(`/cohorts/${cohortId}/engagements`, { params })
+        const engagements = engRes.data ?? engRes
+
+        const sessionLists = await Promise.all(
+          engagements.map(async (engagement) => {
+            const { data: sessRes } = await api.get(`/engagements/${engagement.id}/sessions`)
+            const sessions = sessRes.data ?? sessRes
+           
+            return sessions.map((s) => ({ ...s, engagement }))
+          })
+        )
+
+        this.sessions = sessionLists
+          .flat()
+          .sort((a, b) => new Date(a.session_date) - new Date(b.session_date))
+
         return this.sessions
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to load cohort sessions.'
@@ -42,22 +59,20 @@ export const useSessionsStore = defineStore('sessions', {
       }
     },
 
-  
     async deliver(sessionId) {
       this.error = null
       try {
         const { data } = await api.patch(`/sessions/${sessionId}/deliver`)
-        const payload = data.data ?? data
-        const updatedSession = payload.session ?? payload
+        const updated = data.data ?? data
 
         const index = this.sessions.findIndex((s) => s.id === sessionId)
         if (index !== -1) {
-          this.sessions[index] = { ...this.sessions[index], ...updatedSession }
+          this.sessions[index] = { ...this.sessions[index], ...updated }
         }
 
-        return payload
+        return updated
       } catch (err) {
-        if (err.response?.status === 409) {
+        if (err.response?.status === 422) {
           this.error = 'This session was already delivered.'
         } else {
           this.error = err.response?.data?.message || 'Failed to mark session as delivered.'

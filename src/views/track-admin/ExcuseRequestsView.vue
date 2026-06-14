@@ -130,8 +130,8 @@ async function submitReject(request) {
           @click="toggleExpand(request.id)"
         >
           <div class="flex items-center gap-3">
-            <span class="text-sm font-medium text-neutral-800">{{ request.student_name }}</span>
-            <span class="text-sm text-neutral-400">{{ formatDate(request.session_date) }}</span>
+            <span class="text-sm font-medium text-neutral-800">{{ request.student_name ?? '—' }}</span>
+            <span class="text-sm text-neutral-400">{{ formatDate(request.session_date ?? request.created_at) }}</span>
           </div>
           <div class="flex items-center gap-3">
             <Badge :status="request.status" />
@@ -155,29 +155,28 @@ async function submitReject(request) {
           <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <dt class="text-xs font-medium uppercase text-neutral-400">Student</dt>
-              <dd class="text-sm text-neutral-700">{{ request.student_name }}</dd>
+              <dd class="text-sm text-neutral-700">{{ request.student_name ?? '—' }}</dd>
             </div>
             <div>
               <dt class="text-xs font-medium uppercase text-neutral-400">Session Date</dt>
-              <dd class="text-sm text-neutral-700">{{ formatDate(request.session_date) }}</dd>
+              <dd class="text-sm text-neutral-700">{{ formatDate(request.session_date ?? request.created_at) }}</dd>
             </div>
             <div class="sm:col-span-2">
               <dt class="text-xs font-medium uppercase text-neutral-400">Reason</dt>
               <dd class="text-sm text-neutral-700">{{ request.reason }}</dd>
             </div>
-            <div v-if="request.attachment_url">
-              <dt class="text-xs font-medium uppercase text-neutral-400">Attachment</dt>
-              <dd class="text-sm">
-                <a
-                  :href="request.attachment_url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-primary-600 underline hover:text-primary-700"
-                >
-                  View attachment
-                </a>
-              </dd>
-            </div>
+            <div v-if="request.attachment_path">
+  <dt class="text-xs font-medium uppercase text-neutral-400">Attachment</dt>
+  <dd class="text-sm">
+    <a
+      :href="`/storage/${request.attachment_path}`"
+      target="_blank"
+      class="text-primary-600 underline hover:text-primary-700"
+    >
+      View attachment
+    </a>
+  </dd>
+</div>
             <div v-if="request.review_note">
               <dt class="text-xs font-medium uppercase text-neutral-400">Reviewer Note</dt>
               <dd class="text-sm text-neutral-700">{{ request.review_note }}</dd>

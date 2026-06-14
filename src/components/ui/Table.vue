@@ -22,6 +22,15 @@ defineProps({
     default: 'id',
   },
 })
+function getDisplayValue(value) {
+  if (value == null) return '—'
+
+  if (typeof value === 'object') {
+    return value.name ?? '—'
+  }
+
+  return value
+}
 </script>
 
 <template>
@@ -67,8 +76,8 @@ defineProps({
           >
             <!-- Allow per-column custom rendering via named slots: <template #cell-status="{ row }"> -->
             <slot :name="`cell-${col.key}`" :row="row" :value="row[col.key]">
-              {{ row[col.key] }}
-            </slot>
+  {{ getDisplayValue(row[col.key]) }}
+</slot>
           </td>
         </tr>
       </tbody>
